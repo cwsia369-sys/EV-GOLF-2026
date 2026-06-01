@@ -6,8 +6,9 @@ Landing page de alta gama para la venta consultiva de carros de golf eléctricos
 
 - **React 19** + **TypeScript**
 - **Vite 6** (dev server y build)
-- **Tailwind CSS** (vía CDN, configurado en `index.html`)
+- **Tailwind CSS** (build con PostCSS — `tailwind.config.js` / `index.css`)
 - **Font Awesome** + **Inter** (vía CDN)
+- **Tracking**: GTM/dataLayer + captura de UTMs (`tracking.ts`)
 
 Toda la UI vive en un único componente: [`App.tsx`](App.tsx).
 

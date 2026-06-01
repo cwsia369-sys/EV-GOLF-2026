@@ -643,6 +643,7 @@ const Hero = ({ t, onOpenReel }: { t: any, onOpenReel: () => void }) => {
         <img
           src="/media/hero-cover.jpg"
           alt="Carro de golf eléctrico EV-GOLF en campo de golf, disponible en Colombia"
+          fetchPriority="high"
           className="w-full h-full object-cover object-[72%_center] brightness-[0.82]"
         />
         {/* Gradient overlay for text legibility */}
@@ -1128,10 +1129,11 @@ Please connect me with an advisor to verify immediate dispatch availability and 
               {/* Dynamic Image Display with smooth scale animation */}
               <div className="w-full h-[180px] flex items-center justify-center mt-7">
                 {currentPreviewImage && (
-                  <img 
-                    src={currentPreviewImage} 
+                  <img
+                    src={currentPreviewImage}
                     alt="Premium preview of configuration"
-                    className="w-full h-full object-contain p-2 max-h-[190px] transition-all duration-700 hover:scale-105 drop-shadow-xl" 
+                    loading="lazy"
+                    className="w-full h-full object-contain p-2 max-h-[190px] transition-all duration-700 hover:scale-105 drop-shadow-xl"
                   />
                 )}
               </div>
@@ -1254,6 +1256,7 @@ const Features = ({ t, lang }: { t: any, lang: string }) => {
               <img
                 src="https://i.ibb.co/s9drKn1v/Gemini-Generated-Image-sime9csime9csime.png"
                 alt="Interior premium EV-GOLF"
+                loading="lazy"
                 className="rounded-[2.5rem] luxury-shadow w-full h-[550px] object-cover border-8 border-white"
               />
               <div className="absolute -bottom-6 -right-6 bg-navy text-white p-10 rounded-3xl luxury-shadow border-b-4 border-luxuryGold">
