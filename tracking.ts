@@ -28,7 +28,7 @@ export const WHATSAPP_NUMBER: string = ENV.VITE_WHATSAPP_NUMBER || "13053376447"
 export const GTM_ID: string | undefined = ENV.VITE_GTM_ID;
 
 // --- URL final del sitio (para canonical / OG / schema) ---
-export const SITE_URL: string = ENV.VITE_SITE_URL || "https://ev-golf.co";
+export const SITE_URL: string = ENV.VITE_SITE_URL || "https://ev-golf-2026.vercel.app";
 
 // Valor simbólico de un lead (un clic de WhatsApp NO es una venta).
 // El precio del modelo viaja solo como parámetro informativo.
