@@ -1216,18 +1216,19 @@ Please connect me with an advisor to verify immediate dispatch availability and 
               <div className="relative pt-5 mt-auto border-t border-white/10">
                 <button
                   onClick={handleWhatsappSubmit}
-                  className="group w-full bg-luxuryGold text-navy rounded-2xl px-5 py-4 shadow-lg hover:brightness-105 active:scale-[0.98] transition-all duration-300"
+                  className="group w-full bg-luxuryGold text-navy rounded-2xl px-5 pt-4 pb-5 shadow-lg hover:shadow-luxuryGold/30 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300"
                   aria-label={t("config_request_whatsapp")}
                 >
                   <span className="block text-[10px] uppercase tracking-[0.3em] font-bold text-navy/60 mb-1">
                     {t("config_total")}
                   </span>
-                  <span className="block text-3xl md:text-4xl leading-none font-black tracking-tight">
+                  <span className="block text-3xl md:text-4xl leading-none font-black tracking-tight mb-4">
                     {formatCurrency(totalPrice)}
                   </span>
-                  <span className="flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-wider mt-2">
-                    <i className="fab fa-whatsapp text-sm"></i>
-                    {lang === "es" ? "Enviar cotización" : "Send quote"}
+                  {/* CTA pill (se ve claramente clickeable) */}
+                  <span className="flex items-center justify-center gap-2.5 bg-navy text-white rounded-full py-3 px-5 text-xs font-black uppercase tracking-wider shadow-md group-hover:bg-green-600 transition-colors duration-300">
+                    <i className="fab fa-whatsapp text-base"></i>
+                    {t("config_request_whatsapp")}
                     <i className="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
                   </span>
                 </button>
@@ -1342,6 +1343,7 @@ const App: React.FC = () => {
     trackEvent('page_view');
 
     const fired: Record<number, boolean> = {};
+    const revealEls = () => Array.from(document.querySelectorAll('.reveal'));
     const onScroll = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
       const docH = document.documentElement.scrollHeight || 1;
@@ -1352,9 +1354,18 @@ const App: React.FC = () => {
           trackEvent(`scroll_${mark}`, { event_category: 'engagement', percent: mark });
         }
       });
+      // Reveal: muestra los elementos cuyo borde superior entra al viewport
+      const trigger = window.innerHeight * 0.9;
+      revealEls().forEach((el) => {
+        if (el.getBoundingClientRect().top < trigger) el.classList.add('is-visible');
+      });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    // Chequeo inicial (y un segundo pase por si el layout tarda)
+    onScroll();
+    const t = setTimeout(onScroll, 300);
+
+    return () => { window.removeEventListener('scroll', onScroll); clearTimeout(t); };
   }, []);
 
   // Dispara evento de lead + abre el chat (los CTAs de WhatsApp lo usan).
@@ -1513,7 +1524,7 @@ const App: React.FC = () => {
         {/* Ideales para (usos) */}
         <section className="py-24 bg-softGray border-t border-gray-100">
           <div className="container mx-auto px-6">
-            <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="reveal text-center max-w-3xl mx-auto mb-14">
               <span className="text-luxuryGold font-extrabold tracking-[0.4em] uppercase text-[11px] mb-4 block">
                 {t('usos_label')}
               </span>
@@ -1535,14 +1546,16 @@ const App: React.FC = () => {
                 { icon: 'fa-house-chimney', es: 'Fincas', en: 'Estates' },
                 { icon: 'fa-tent', es: 'Glamping', en: 'Glamping' },
                 { icon: 'fa-map-location-dot', es: 'Proyectos turísticos', en: 'Tourism projects' },
-              ].map((u) => (
-                <div key={u.es} className="bg-white rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 border border-gray-100 luxury-shadow card-hover">
-                  <div className="w-12 h-12 rounded-xl bg-navy/5 flex items-center justify-center text-luxuryGold text-xl">
-                    <i className={`fas ${u.icon}`}></i>
+              ].map((u, i) => (
+                <div key={u.es} className="reveal" style={{ transitionDelay: `${i * 60}ms` }}>
+                  <div className="group h-full bg-white rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 border border-gray-100 luxury-shadow transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-luxuryGold/40 cursor-default">
+                    <div className="w-12 h-12 rounded-xl bg-navy/5 flex items-center justify-center text-luxuryGold text-xl transition-all duration-300 group-hover:bg-luxuryGold group-hover:text-navy group-hover:scale-110 group-hover:-rotate-6">
+                      <i className={`fas ${u.icon}`}></i>
+                    </div>
+                    <span className="text-navy text-xs font-bold uppercase tracking-wider leading-tight">
+                      {lang === 'es' ? u.es : u.en}
+                    </span>
                   </div>
-                  <span className="text-navy text-xs font-bold uppercase tracking-wider leading-tight">
-                    {lang === 'es' ? u.es : u.en}
-                  </span>
                 </div>
               ))}
             </div>
