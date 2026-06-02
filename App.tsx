@@ -588,10 +588,15 @@ const Navbar = ({ t, lang, setLang, onLead }: { t: any, lang: string, setLang: (
   return (
     <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-3' : 'bg-transparent py-5'}`}>
       <div className="container mx-auto px-6 flex justify-between items-center">
-        <div className="text-2xl font-bold tracking-tighter flex items-center gap-2 shrink-0 whitespace-nowrap">
+        <a
+          href="#top"
+          onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          aria-label="EV-GOLF — Inicio"
+          className="text-2xl font-bold tracking-tighter flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
+        >
           <span className={`transition-colors duration-300 ${!isScrolled ? 'text-white' : 'text-navy'}`}>EV</span>
           <span className="text-luxuryGold">-GOLF</span>
-        </div>
+        </a>
         
         <div className="flex items-center gap-4 md:gap-8">
           <a
