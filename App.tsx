@@ -44,7 +44,7 @@ const toEmbedUrl = (url: string): string | null => {
 // --- I18N DICTIONARY ---
 const translations: Record<string, any> = {
   es: {
-    nav_contact: "Hablar con un Asesor",
+    nav_contact: "Cotizar",
     hero_title_1: "Carros de Golf Eléctricos",
     hero_title_2: "Entrega Inmediata en Colombia",
     hero_desc: "Ideales para hoteles, clubes, fincas y resorts. Quedan pocas unidades disponibles.",
@@ -146,7 +146,7 @@ const translations: Record<string, any> = {
     video_desc: "Mira todos los detalles del nuevo EV-GOLF en acción a través de nuestra presentación premium.",
   },
   en: {
-    nav_contact: "Talk to an Advisor",
+    nav_contact: "Get a quote",
     hero_title_1: "Electric Golf Carts",
     hero_title_2: "Immediate Delivery in Colombia",
     hero_desc: "Ideal for hotels, clubs, estates and resorts. Only a few units left.",
@@ -588,7 +588,7 @@ const Navbar = ({ t, lang, setLang, onLead }: { t: any, lang: string, setLang: (
   return (
     <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-3' : 'bg-transparent py-5'}`}>
       <div className="container mx-auto px-6 flex justify-between items-center">
-        <div className="text-2xl font-bold tracking-tighter flex items-center gap-2">
+        <div className="text-2xl font-bold tracking-tighter flex items-center gap-2 shrink-0 whitespace-nowrap">
           <span className={`transition-colors duration-300 ${!isScrolled ? 'text-white' : 'text-navy'}`}>EV</span>
           <span className="text-luxuryGold">-GOLF</span>
         </div>
@@ -628,7 +628,7 @@ const Navbar = ({ t, lang, setLang, onLead }: { t: any, lang: string, setLang: (
             className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-full font-semibold hover:bg-green-700 transition-colors shadow-lg"
           >
             <i className="fab fa-whatsapp text-xl"></i>
-            <span className="hidden md:inline">{t('nav_contact')}</span>
+            <span>{t('nav_contact')}</span>
           </a>
         </div>
       </div>
@@ -1595,18 +1595,6 @@ const App: React.FC = () => {
       {/* Video Modal (hero reel + videos de modelos) */}
       <VideoModal video={activeVideo} onClose={() => setActiveVideo(null)} t={t} />
       
-      {/* Floating WhatsApp (desktop + mobile) */}
-      <a
-        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(t('wa_msg_nav'))}`}
-        onClick={() => leadEvent('floating')}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-[0_10px_40px_rgba(34,197,94,0.45)] transition-all hover:scale-105 active:scale-95 pl-4 pr-4 py-4 md:pr-6"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={lang === 'es' ? 'Cotizar por WhatsApp' : 'Quote via WhatsApp'}
-      >
-        <i className="fab fa-whatsapp text-2xl"></i>
-        <span className="hidden md:inline font-bold text-sm uppercase tracking-wider">{lang === 'es' ? 'Cotizar por WhatsApp' : 'Quote via WhatsApp'}</span>
-      </a>
     </div>
   );
 };
