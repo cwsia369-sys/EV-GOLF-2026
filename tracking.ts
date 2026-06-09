@@ -53,8 +53,8 @@ export const INVENTORY: Record<ModelKey, {
     seatKey: "4-seat",
     name: "EV-GOLF Signature 4",
     seats: 4,
-    price: 60000000,
-    priceFormatted: "$60.000.000 COP",
+    price: 55900000,
+    priceFormatted: "$55.900.000 COP",
     stock: 4,
   },
   resort6: {
@@ -62,8 +62,8 @@ export const INVENTORY: Record<ModelKey, {
     seatKey: "6-seat",
     name: "EV-GOLF Resort 6",
     seats: 6,
-    price: 65000000,
-    priceFormatted: "$65.000.000 COP",
+    price: 59900000,
+    priceFormatted: "$59.900.000 COP",
     stock: 2,
   },
 };

@@ -104,8 +104,8 @@ const translations: Record<string, any> = {
     modal_secure: "Visualización Segura - No disponible para descarga",
     modal_close: "Cerrar Visualización",
     modal_copyright: "Propiedad intelectual reservada EV-GOLF Colombia",
-    wa_msg_4: "Hola EV-GOLF, me interesa el 4 Puestos Luxury Edition ($60.000.000 COP). Quiero fotos, videos, ficha técnica y disponibilidad para entrega inmediata.",
-    wa_msg_6: "Hola EV-GOLF, me interesa el 6 Puestos Family Resort ($65.000.000 COP). Quiero fotos, videos, ficha técnica y disponibilidad para entrega inmediata.",
+    wa_msg_4: "Hola EV-GOLF, me interesa el 4 Puestos Luxury Edition ($55.900.000 COP). Quiero fotos, videos, ficha técnica y disponibilidad para entrega inmediata.",
+    wa_msg_6: "Hola EV-GOLF, me interesa el 6 Puestos Family Resort ($59.900.000 COP). Quiero fotos, videos, ficha técnica y disponibilidad para entrega inmediata.",
     wa_msg_nav: "Hola EV-GOLF, quiero hablar con un asesor sobre los carros de golf eléctricos con entrega inmediata en Colombia.",
     p_4_feat: ["Capacidad para 4 personas", "Motor eléctrico 3.5 KW", "Batería de litio 72V – 100AH", "Autonomía 80–90 km · 35 km/h", "Pantalla HD 9\" + Cámara de reversa", "Luces LED y direccionales · Bluetooth", "Suspensión independiente MacPherson", "Llantas Off Road rin 14\" · Frenos hidráulicos", "Asientos premium en cuero"],
     p_6_feat: ["Capacidad para 6 personas", "Motor eléctrico 3.5 KW", "Batería de litio premium 72V – 100AH", "Autonomía 80–90 km · 35 km/h", "Pantalla HD 9\" + Cámara de reversa", "Luces LED y direccionales · Bluetooth", "Suspensión independiente MacPherson", "Llantas Off Road rin 14\" · Frenos hidráulicos", "Asientos premium en cuero"],
@@ -206,8 +206,8 @@ const translations: Record<string, any> = {
     modal_secure: "Secure Viewing - Not available for download",
     modal_close: "Close Viewer",
     modal_copyright: "Intellectual Property Reserved EV-GOLF Colombia",
-    wa_msg_4: "Hi EV-GOLF, I'm interested in the 4-Seat Luxury Edition ($60,000,000 COP). I'd like photos, videos, the technical sheet and availability for immediate delivery.",
-    wa_msg_6: "Hi EV-GOLF, I'm interested in the 6-Seat Family Resort ($65,000,000 COP). I'd like photos, videos, the technical sheet and availability for immediate delivery.",
+    wa_msg_4: "Hi EV-GOLF, I'm interested in the 4-Seat Luxury Edition ($55,900,000 COP). I'd like photos, videos, the technical sheet and availability for immediate delivery.",
+    wa_msg_6: "Hi EV-GOLF, I'm interested in the 6-Seat Family Resort ($59,900,000 COP). I'd like photos, videos, the technical sheet and availability for immediate delivery.",
     wa_msg_nav: "Hello EV-GOLF, I'd like to talk to an advisor about the electric golf carts with immediate delivery in Colombia.",
     p_4_feat: ["4-passenger capacity", "3.5 KW electric motor", "Lithium battery 72V – 100AH", "Range 80–90 km · 35 km/h", "9\" HD screen + reverse camera", "Full LED lights · Bluetooth", "Independent MacPherson suspension", "14\" Off Road tires · hydraulic brakes", "Premium leather seats"],
     p_6_feat: ["6-passenger capacity", "3.5 KW electric motor", "Premium lithium battery 72V – 100AH", "Range 80–90 km · 35 km/h", "9\" HD screen + reverse camera", "Full LED lights · Bluetooth", "Independent MacPherson suspension", "14\" Off Road tires · hydraulic brakes", "Premium leather seats"],
@@ -831,8 +831,8 @@ const Configurator = ({
 }) => {
   // Component price configurations
   const basePrices: Record<string, number> = {
-    "4-seat": 60000000,
-    "6-seat": 65000000,
+    "4-seat": 55900000,
+    "6-seat": 59900000,
   };
 
   // Colores disponibles: Blanco y Negro, ambos sin costo adicional.
@@ -1468,7 +1468,7 @@ const App: React.FC = () => {
                 title={t('prod_4_title')}
                 description={t('prod_4_desc')}
                 features={t('p_4_feat')}
-                price="$60.000.000 COP"
+                price="$55.900.000 COP"
                 badge={lang === 'es' ? 'Disponible' : 'Available'}
                 images={[
                   "https://i.ibb.co/hxmXLZ7P/Chat-GPT-Image-Jan-22-2026-09-47-29-PM.png",
@@ -1480,14 +1480,14 @@ const App: React.FC = () => {
                 onOpenTechSheet={() => { trackEvent('view_technical_sheet', { model: t('prod_4_title') }); openPdf(t('prod_4_title'), pdf4SeatPages); }}
                 onPersonalize={() => handlePersonalizeSelected("4-seat")}
                 onWatchVideo={() => { trackEvent('video_play', { model: t('prod_4_title'), location: 'product_card' }); setActiveVideo({ ...MODEL_VIDEOS["4-seat"], title: t('prod_4_title'), subtitle: t('prod_video_tag'), vertical: true }); }}
-                onLead={() => leadEvent('product_card', { model: t('prod_4_title'), price: 60000000 })}
+                onLead={() => leadEvent('product_card', { model: t('prod_4_title'), price: 55900000 })}
                 t={t}
               />
               <ProductCard 
                 title={t('prod_6_title')}
                 description={t('prod_6_desc')}
                 features={t('p_6_feat')}
-                price="$65.000.000 COP"
+                price="$59.900.000 COP"
                 badge={lang === 'es' ? 'Disponible' : 'Available'}
                 images={[
                   "https://i.ibb.co/20kqPH5N/Chat-GPT-Image-Jan-26-2026-04-11-32-PM.png",
@@ -1499,7 +1499,7 @@ const App: React.FC = () => {
                 onOpenTechSheet={() => { trackEvent('view_technical_sheet', { model: t('prod_6_title') }); openPdf(t('prod_6_title'), pdf6SeatPages); }}
                 onPersonalize={() => handlePersonalizeSelected("6-seat")}
                 onWatchVideo={() => { trackEvent('video_play', { model: t('prod_6_title'), location: 'product_card' }); setActiveVideo({ ...MODEL_VIDEOS["6-seat"], title: t('prod_6_title'), subtitle: t('prod_video_tag'), vertical: true }); }}
-                onLead={() => leadEvent('product_card', { model: t('prod_6_title'), price: 65000000 })}
+                onLead={() => leadEvent('product_card', { model: t('prod_6_title'), price: 59900000 })}
                 t={t}
               />
             </div>
