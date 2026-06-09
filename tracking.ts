@@ -1,18 +1,18 @@
 // =============================================================
-//  EV-GOLF · Configuración central + Tracking (GTM / dataLayer)
+//  EV-GOLF · Configuración central + Tracking
 // =============================================================
 //
-//  Estrategia de medición: GTM como ÚNICA capa.
-//  Todo se empuja a window.dataLayer; GA4, Meta Pixel y Google Ads
-//  se configuran DENTRO de Google Tag Manager (no se hardcodean
-//  gtag/fbq aquí para evitar doble conteo).
+//  Medición activa:
+//   - Meta Pixel (directo): base en index.html (PageView). Aquí
+//     disparamos Lead / Contact / CustomizeProduct vía metaTrack().
+//   - dataLayer: queda listo por si más adelante se añade GTM/GA4.
 //
-//  Las variables VITE_* se "hornean" en build-time. Para activar
-//  GTM hay que definir VITE_GTM_ID antes de compilar y desplegar.
+//  Las variables VITE_* se "hornean" en build-time.
 
 declare global {
   interface Window {
     dataLayer?: any[];
+    fbq?: (...args: any[]) => void;
   }
 }
 
@@ -153,6 +153,15 @@ export function trackEvent(eventName: string, params: Record<string, any> = {}):
 }
 
 // =============================================================
+//  Meta Pixel — disparo seguro de eventos
+// =============================================================
+export function metaTrack(event: string, params: Record<string, any> = {}): void {
+  if (typeof window !== "undefined" && typeof window.fbq === "function") {
+    window.fbq("track", event, params);
+  }
+}
+
+// =============================================================
 //  Apertura de WhatsApp + disparo de eventos de conversión
 // =============================================================
 export function openWhatsapp({
@@ -182,9 +191,13 @@ export function openWhatsapp({
     currency: "COP",
   };
 
-  // GTM se encarga de mapear estos eventos a GA4 / Meta Lead+Contact / Google Ads.
+  // dataLayer (por si se añade GTM/GA4 luego)
   trackEvent("whatsapp_click", base);
   trackEvent("generate_lead", { ...base, event_category: "conversion", event_label: "whatsapp_lead" });
+
+  // Meta Pixel: Contact + Lead
+  metaTrack("Contact", { content_name: model, value: LEAD_VALUE, currency: "COP" });
+  metaTrack("Lead", { content_name: model, value: LEAD_VALUE, currency: "COP" });
 
   const finalMessage = encodeURIComponent(message);
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${finalMessage}`, "_blank");

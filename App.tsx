@@ -5,6 +5,7 @@ import {
   TOTAL_STOCK,
   openWhatsapp,
   trackEvent,
+  metaTrack,
   captureUtmParams,
   initGtm,
 } from './tracking';
@@ -926,6 +927,10 @@ const Configurator = ({
     trackEvent("configurator_submit", eventData);
     trackEvent("whatsapp_click", { ...eventData, event_category: "lead", event_label: "configurator" });
     trackEvent("generate_lead", { ...eventData, event_label: "whatsapp_lead" });
+    // Meta Pixel: configuración enviada = CustomizeProduct + Lead + Contact
+    metaTrack("CustomizeProduct", { content_name: modelName, value: 1, currency: "COP" });
+    metaTrack("Lead", { content_name: modelName, value: 1, currency: "COP" });
+    metaTrack("Contact", { content_name: modelName, value: 1, currency: "COP" });
 
     const selectedColorName = colorsList.find(c => c.key === selectedColor)?.label || selectedColor;
     const selectedInteriorName = interiorList.find(i => i.key === selectedInterior)?.label || selectedInterior;
@@ -1384,6 +1389,9 @@ const App: React.FC = () => {
   const leadEvent = (buttonLocation: string, extra: Record<string, any> = {}) => {
     trackEvent('whatsapp_click', { event_category: 'lead', event_label: buttonLocation, button_location: buttonLocation, language: lang, ...extra });
     trackEvent('generate_lead', { event_category: 'conversion', event_label: 'whatsapp_lead', button_location: buttonLocation, language: lang, lead_value: 1, currency: 'COP', ...extra });
+    // Meta Pixel: cada clic de WhatsApp = Contact + Lead
+    metaTrack('Contact', { content_name: extra.model, value: 1, currency: 'COP' });
+    metaTrack('Lead', { content_name: extra.model, value: 1, currency: 'COP' });
   };
 
   // --- LANGUAGE LOGIC ---
