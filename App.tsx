@@ -654,7 +654,7 @@ const Hero = ({ t, onOpenReel }: { t: any, onOpenReel: () => void }) => {
           src="/media/hero-cover.jpg"
           alt="Carro de golf eléctrico EV-GOLF en campo de golf, disponible en Colombia"
           fetchPriority="high"
-          className="w-full h-full object-cover object-[72%_center] brightness-[0.82]"
+          className="w-full h-full object-cover object-[72%_center] brightness-[0.82] hero-zoom"
         />
         {/* Gradient overlay for text legibility */}
         <div className="absolute inset-0 bg-gradient-to-r from-navy/85 via-navy/40 to-transparent" />
@@ -663,15 +663,15 @@ const Hero = ({ t, onOpenReel }: { t: any, onOpenReel: () => void }) => {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-2xl">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-[1.1] mb-5 tracking-tight">
+          <h1 className="hero-in text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-[1.1] mb-5 tracking-tight">
             {t('hero_title_1')} <span className="text-luxuryGold block mt-1">{t('hero_title_2')}</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-200 mb-7 font-light leading-relaxed">
+          <p className="hero-in text-lg md:text-xl text-gray-200 mb-7 font-light leading-relaxed" style={{ animationDelay: '120ms' }}>
             {t('hero_desc')}
           </p>
 
           {/* Trust / scarcity badges */}
-          <div className="flex flex-wrap gap-3 mb-9">
+          <div className="hero-in flex flex-wrap gap-3 mb-9" style={{ animationDelay: '240ms' }}>
             {[t('hero_badge_1'), t('hero_badge_2'), t('hero_badge_3')].map((b, i) => (
               <span key={i} className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[11px] md:text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full">
                 <i className="fas fa-circle-check text-luxuryGold text-xs"></i>
@@ -680,7 +680,7 @@ const Hero = ({ t, onOpenReel }: { t: any, onOpenReel: () => void }) => {
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8">
+          <div className="hero-in flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8" style={{ animationDelay: '360ms' }}>
             <a
               href="#modelos"
               className="bg-luxuryGold text-navy px-8 py-4 rounded-md text-base font-bold text-center hover:brightness-105 transition-all luxury-shadow uppercase tracking-wider shrink-0"

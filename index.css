@@ -38,4 +38,28 @@
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
   }
+
+  /* Entrada coreografiada del hero */
+  @keyframes heroIn {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero-in {
+    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Zoom lento (Ken Burns) en la foto del hero */
+  @keyframes kenBurns {
+    from { transform: scale(1); }
+    to   { transform: scale(1.09); }
+  }
+  .hero-zoom {
+    animation: kenBurns 20s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-in { opacity: 1; animation: none; }
+    .hero-zoom { animation: none; }
+  }
 }
