@@ -1442,6 +1442,27 @@ const App: React.FC = () => {
   // Video modal (reutilizable: hero reel + videos de cada modelo)
   const [activeVideo, setActiveVideo] = useState<VideoConfig | null>(null);
 
+  // --- Deep-link de videos (links para compartir, sin cambiar el home) ---
+  // /videos -> reel general | /videos/4-puestos -> comercial 4 | /videos/6-puestos -> comercial 6
+  // También soporta ?video=reel|4|6
+  useEffect(() => {
+    const path = window.location.pathname.replace(/\/+$/, '');
+    const v = new URLSearchParams(window.location.search).get('video');
+    const is = (...keys: string[]) => keys.includes(path) || (v ? keys.some(k => k.endsWith(v)) : false);
+
+    if (is('/videos/4-puestos', '/videos/4') || v === '4') {
+      trackEvent('video_play', { model: t('prod_4_title'), location: 'deeplink' });
+      setActiveVideo({ ...MODEL_VIDEOS['4-seat'], title: t('prod_4_title'), subtitle: t('prod_video_tag'), vertical: true });
+    } else if (is('/videos/6-puestos', '/videos/6') || v === '6') {
+      trackEvent('video_play', { model: t('prod_6_title'), location: 'deeplink' });
+      setActiveVideo({ ...MODEL_VIDEOS['6-seat'], title: t('prod_6_title'), subtitle: t('prod_video_tag'), vertical: true });
+    } else if (path === '/videos' || path === '/video' || v === 'reel' || v === '1') {
+      trackEvent('video_play', { location: 'deeplink_reel' });
+      setActiveVideo({ url: VIDEO_URL, poster: VIDEO_POSTER, title: t('video_title'), subtitle: t('video_subtitle'), vertical: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const openPdf = (title: string, pages: string[]) => {
     setModalData({ isOpen: true, title, pages });
     document.body.style.overflow = 'hidden'; 
