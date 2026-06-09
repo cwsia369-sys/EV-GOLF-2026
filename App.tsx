@@ -342,6 +342,7 @@ const VideoModal = ({ video, onClose, t }: { video: VideoConfig | null, onClose:
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
+  const [loading, setLoading] = useState(true);
   const url = video?.url || "";
   const vertical = video?.vertical ?? true;
   const embedUrl = toEmbedUrl(url);
@@ -356,6 +357,7 @@ const VideoModal = ({ video, onClose, t }: { video: VideoConfig | null, onClose:
     // Sonido primero: intenta reproducir CON audio (funciona si se abrió por un clic).
     // Si el navegador lo bloquea (ej. deep-link sin interacción), cae a silencio.
     setPlaying(true);
+    setLoading(true);
     const v = videoRef.current;
     if (v) {
       v.currentTime = 0;
@@ -435,7 +437,18 @@ const VideoModal = ({ video, onClose, t }: { video: VideoConfig | null, onClose:
               autoPlay
               muted
               onClick={togglePlay}
+              onLoadStart={() => setLoading(true)}
+              onWaiting={() => setLoading(true)}
+              onCanPlay={() => setLoading(false)}
+              onPlaying={() => setLoading(false)}
             />
+
+            {/* Spinner de carga / buffering */}
+            {loading && (
+              <div className="absolute inset-0 z-[15] flex items-center justify-center bg-black/40 pointer-events-none">
+                <span className="w-14 h-14 rounded-full border-[3px] border-white/25 border-t-luxuryGold animate-spin" />
+              </div>
+            )}
 
             {/* Top gradient + brand */}
             <div className="absolute top-0 inset-x-0 h-28 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
@@ -450,8 +463,8 @@ const VideoModal = ({ video, onClose, t }: { video: VideoConfig | null, onClose:
               {video.title && <p className="text-white text-base font-bold leading-tight">{video.title}</p>}
             </div>
 
-            {/* Play overlay when paused */}
-            {!playing && (
+            {/* Play overlay when paused (no mientras carga) */}
+            {!playing && !loading && (
               <button
                 onClick={togglePlay}
                 className="absolute inset-0 flex items-center justify-center bg-black/20 z-10"
@@ -473,7 +486,7 @@ const VideoModal = ({ video, onClose, t }: { video: VideoConfig | null, onClose:
             </button>
 
             {/* Tap-to-unmute hint */}
-            {muted && (
+            {muted && !loading && (
               <button
                 onClick={toggleMute}
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-2 bg-black/55 backdrop-blur-md text-white text-[11px] font-bold uppercase tracking-widest px-4 py-2.5 rounded-full border border-white/15 animate-pulse"
