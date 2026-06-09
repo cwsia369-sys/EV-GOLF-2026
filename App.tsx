@@ -353,11 +353,22 @@ const VideoModal = ({ video, onClose, t }: { video: VideoConfig | null, onClose:
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
-    // Reset to autoplay-muted each time it opens.
-    setMuted(true);
+    // Sonido primero: intenta reproducir CON audio (funciona si se abrió por un clic).
+    // Si el navegador lo bloquea (ej. deep-link sin interacción), cae a silencio.
     setPlaying(true);
     const v = videoRef.current;
-    if (v) { v.currentTime = 0; v.muted = true; v.play().catch(() => {}); }
+    if (v) {
+      v.currentTime = 0;
+      v.muted = false;
+      setMuted(false);
+      v.play().then(() => {
+        if (!v.muted) setMuted(false);
+      }).catch(() => {
+        v.muted = true;
+        setMuted(true);
+        v.play().catch(() => {});
+      });
+    }
     return () => {
       document.body.style.overflow = 'auto';
       window.removeEventListener('keydown', onKey);
@@ -719,11 +730,47 @@ const Hero = ({ t, onOpenReel }: { t: any, onOpenReel: () => void }) => {
   );
 };
 
-const ProductCard = ({ title, description, features, price, oldPrice, images, badge, waLink, onOpenTechSheet, onPersonalize, onWatchVideo, onLead, t }: {
+// Precio con count-up al entrar en viewport (seguro: muestra el valor final si no se dispara)
+const AnimatedPrice = ({ value, className }: { value: number, className?: string }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const fmt = (n: number) => "$" + Math.round(n).toLocaleString("es-CO") + " COP";
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let started = false;
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const run = () => {
+      if (started) return;
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.92 && r.bottom > 0) {
+        started = true;
+        window.removeEventListener("scroll", run);
+        if (reduce) { el.textContent = fmt(value); return; }
+        const dur = 1100, t0 = performance.now();
+        const tick = (now: number) => {
+          const p = Math.min(1, (now - t0) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = fmt(value * eased);
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = fmt(value);
+        };
+        requestAnimationFrame(tick);
+      }
+    };
+    window.addEventListener("scroll", run, { passive: true });
+    run();
+    const safety = setTimeout(() => { if (!started) el.textContent = fmt(value); }, 3000);
+    return () => { window.removeEventListener("scroll", run); clearTimeout(safety); };
+  }, [value]);
+  return <span ref={ref} className={className}>{fmt(value)}</span>;
+};
+
+const ProductCard = ({ title, description, features, price, priceValue, oldPrice, images, badge, waLink, onOpenTechSheet, onPersonalize, onWatchVideo, onLead, t }: {
   title: string,
   description: string,
   features: string[],
   price: string,
+  priceValue: number,
   oldPrice?: string,
   images: string[],
   badge: string,
@@ -778,10 +825,10 @@ const ProductCard = ({ title, description, features, price, oldPrice, images, ba
         <p className="text-[10px] text-luxuryGold uppercase tracking-[0.2em] mb-1.5 font-bold">{t('prod_launch')}</p>
         <div className="flex items-baseline justify-center gap-3 mb-2">
           {oldPrice && <span className="text-base sm:text-lg text-gray-400 line-through font-semibold">{oldPrice}</span>}
-          <span className="text-3xl sm:text-4xl font-black text-navy tracking-tighter">{price}</span>
+          <AnimatedPrice value={priceValue} className="text-3xl sm:text-4xl font-black text-navy tracking-tighter" />
         </div>
         <p className="inline-flex items-center gap-1.5 text-[10px] font-bold text-navy/70 uppercase tracking-wider mb-5">
-          <i className="fas fa-bolt text-luxuryGold"></i>
+          <i className="fas fa-bolt text-luxuryGold soft-pulse"></i>
           {t('prod_launch_sub')}
         </p>
 
@@ -973,7 +1020,7 @@ Please connect me with an advisor to verify immediate dispatch availability and 
       <div className="container mx-auto px-6">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="reveal text-center max-w-3xl mx-auto mb-16">
           <span className="text-luxuryGold font-extrabold tracking-[0.4em] uppercase text-[11px] mb-4 block leading-tight">
             {t("config_title")}
           </span>
@@ -1152,10 +1199,11 @@ Please connect me with an advisor to verify immediate dispatch availability and 
               <div className="w-full h-[180px] flex items-center justify-center mt-7">
                 {currentPreviewImage && (
                   <img
+                    key={currentPreviewImage}
                     src={currentPreviewImage}
                     alt="Premium preview of configuration"
                     loading="lazy"
-                    className="w-full h-full object-contain p-2 max-h-[190px] transition-all duration-700 hover:scale-105 drop-shadow-xl"
+                    className="soft-fade w-full h-full object-contain p-2 max-h-[190px] transition-transform duration-700 hover:scale-105 drop-shadow-xl"
                   />
                 )}
               </div>
@@ -1233,13 +1281,13 @@ Please connect me with an advisor to verify immediate dispatch availability and 
               <div className="relative pt-5 mt-auto border-t border-white/10">
                 <button
                   onClick={handleWhatsappSubmit}
-                  className="group w-full bg-luxuryGold text-navy rounded-2xl px-5 pt-4 pb-5 shadow-lg hover:shadow-luxuryGold/30 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300"
+                  className="shine group w-full bg-luxuryGold text-navy rounded-2xl px-5 pt-4 pb-5 shadow-lg hover:shadow-luxuryGold/30 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300"
                   aria-label={t("config_request_whatsapp")}
                 >
                   <span className="block text-[10px] uppercase tracking-[0.3em] font-bold text-navy/60 mb-1">
                     {t("config_total")}
                   </span>
-                  <span className="block text-3xl md:text-4xl leading-none font-black tracking-tight mb-4">
+                  <span key={totalPrice} className="price-pop block text-3xl md:text-4xl leading-none font-black tracking-tight mb-4">
                     {formatCurrency(totalPrice)}
                   </span>
                   {/* CTA pill (se ve claramente clickeable) */}
@@ -1273,7 +1321,7 @@ const Features = ({ t, lang }: { t: any, lang: string }) => {
   return (
     <section className="py-24 bg-softGray">
       <div className="container mx-auto px-6">
-        <div className="flex flex-col lg:flex-row items-center gap-16">
+        <div className="reveal flex flex-col lg:flex-row items-center gap-16">
           <div className="w-full lg:w-1/2">
             <div className="relative group">
               <img
@@ -1376,6 +1424,12 @@ const App: React.FC = () => {
       revealEls().forEach((el) => {
         if (el.getBoundingClientRect().top < trigger) el.classList.add('is-visible');
       });
+      // Barra de progreso de scroll
+      const sp = document.getElementById('scroll-progress');
+      if (sp) {
+        const max = docH - window.innerHeight;
+        sp.style.width = Math.min(100, Math.max(0, max > 0 ? (scrollTop / max) * 100 : 0)) + '%';
+      }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     // Chequeo inicial (y un segundo pase por si el layout tarda)
@@ -1488,6 +1542,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-luxuryGold/30">
+      <div id="scroll-progress" />
       <Navbar t={t} lang={lang} setLang={setLang} onLead={leadEvent} />
       
       <main className="flex-grow">
@@ -1496,7 +1551,7 @@ const App: React.FC = () => {
         {/* Catalog Section */}
         <section id="modelos" className="py-24 bg-white relative">
           <div className="container mx-auto px-6">
-            <div className="text-center max-w-3xl mx-auto mb-20">
+            <div className="reveal text-center max-w-3xl mx-auto mb-20">
               <span className="text-luxuryGold font-bold tracking-[0.4em] uppercase text-[10px] mb-5 block">{t('cat_badge')}</span>
               <h2 className="text-4xl md:text-6xl font-black text-navy mb-8 tracking-tighter">{t('cat_title_1')} <span className="text-luxuryGold">{t('hero_title_2')}</span></h2>
               <p className="text-lg text-gray-500 leading-relaxed font-light">
@@ -1504,12 +1559,13 @@ const App: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 max-w-7xl mx-auto">
+            <div className="reveal grid grid-cols-1 md:grid-cols-2 gap-16 max-w-7xl mx-auto">
               <ProductCard 
                 title={t('prod_4_title')}
                 description={t('prod_4_desc')}
                 features={t('p_4_feat')}
                 price="$55.900.000 COP"
+                priceValue={55900000}
                 oldPrice="$60.000.000"
                 badge={lang === 'es' ? 'Disponible' : 'Available'}
                 images={[
@@ -1530,6 +1586,7 @@ const App: React.FC = () => {
                 description={t('prod_6_desc')}
                 features={t('p_6_feat')}
                 price="$59.900.000 COP"
+                priceValue={59900000}
                 oldPrice="$65.000.000"
                 badge={lang === 'es' ? 'Disponible' : 'Available'}
                 images={[
@@ -1606,7 +1663,7 @@ const App: React.FC = () => {
         </section>
 
         <section className="py-24 bg-white">
-            <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-16 text-center items-start">
+            <div className="reveal container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-16 text-center items-start">
                 <div className="group px-8">
                     <div className="text-luxuryGold text-3xl mb-6"><i className="fas fa-truck-fast"></i></div>
                     <h5 className="text-navy font-black text-xl mb-3 tracking-tight">{t('info_logistics_title')}</h5>
