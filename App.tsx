@@ -65,6 +65,8 @@ const translations: Record<string, any> = {
     prod_6_title: "6 Puestos Family Resort",
     prod_6_desc: "Mayor capacidad para transportar visitantes o equipos. Perfecto para hoteles, clubes y resorts. Unidad nueva, lista para entrega inmediata.",
     prod_price_label: "Precio",
+    prod_launch: "Precio de lanzamiento",
+    prod_launch_sub: "Pocas unidades disponibles",
     prod_btn_tech: "Ver ficha técnica",
     prod_btn_buy: "Me interesa",
     prod_btn_personalize: "Personalizar Diseño",
@@ -167,6 +169,8 @@ const translations: Record<string, any> = {
     prod_6_title: "6-Seat Family Resort",
     prod_6_desc: "Greater capacity to move guests or teams. Perfect for hotels, clubs and resorts. Brand-new unit, ready for immediate delivery.",
     prod_price_label: "Price",
+    prod_launch: "Launch price",
+    prod_launch_sub: "Few units available",
     prod_btn_tech: "View technical sheet",
     prod_btn_buy: "I'm interested",
     prod_btn_personalize: "Personalize Design",
@@ -714,11 +718,12 @@ const Hero = ({ t, onOpenReel }: { t: any, onOpenReel: () => void }) => {
   );
 };
 
-const ProductCard = ({ title, description, features, price, images, badge, waLink, onOpenTechSheet, onPersonalize, onWatchVideo, onLead, t }: {
+const ProductCard = ({ title, description, features, price, oldPrice, images, badge, waLink, onOpenTechSheet, onPersonalize, onWatchVideo, onLead, t }: {
   title: string,
   description: string,
   features: string[],
   price: string,
+  oldPrice?: string,
   images: string[],
   badge: string,
   waLink: string,
@@ -769,8 +774,15 @@ const ProductCard = ({ title, description, features, price, images, badge, waLin
       </div>
 
       <div className="mt-auto pt-6 text-center bg-gray-50 -mx-6 -mb-6 p-6 sm:-mx-8 sm:-mb-8 sm:p-8 font-sans">
-        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-semibold">{t('prod_price_label')}</p>
-        <p className="text-3xl sm:text-4xl font-black text-navy mb-5 tracking-tighter">{price}</p>
+        <p className="text-[10px] text-luxuryGold uppercase tracking-[0.2em] mb-1.5 font-bold">{t('prod_launch')}</p>
+        <div className="flex items-baseline justify-center gap-3 mb-2">
+          {oldPrice && <span className="text-base sm:text-lg text-gray-400 line-through font-semibold">{oldPrice}</span>}
+          <span className="text-3xl sm:text-4xl font-black text-navy tracking-tighter">{price}</span>
+        </div>
+        <p className="inline-flex items-center gap-1.5 text-[10px] font-bold text-navy/70 uppercase tracking-wider mb-5">
+          <i className="fas fa-bolt text-luxuryGold"></i>
+          {t('prod_launch_sub')}
+        </p>
 
         {/* CTA principal */}
         <a
@@ -1469,6 +1481,7 @@ const App: React.FC = () => {
                 description={t('prod_4_desc')}
                 features={t('p_4_feat')}
                 price="$55.900.000 COP"
+                oldPrice="$60.000.000"
                 badge={lang === 'es' ? 'Disponible' : 'Available'}
                 images={[
                   "https://i.ibb.co/hxmXLZ7P/Chat-GPT-Image-Jan-22-2026-09-47-29-PM.png",
@@ -1488,6 +1501,7 @@ const App: React.FC = () => {
                 description={t('prod_6_desc')}
                 features={t('p_6_feat')}
                 price="$59.900.000 COP"
+                oldPrice="$65.000.000"
                 badge={lang === 'es' ? 'Disponible' : 'Available'}
                 images={[
                   "https://i.ibb.co/20kqPH5N/Chat-GPT-Image-Jan-26-2026-04-11-32-PM.png",
