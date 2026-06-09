@@ -1491,7 +1491,7 @@ const App: React.FC = () => {
       <Navbar t={t} lang={lang} setLang={setLang} onLead={leadEvent} />
       
       <main className="flex-grow">
-        <Hero t={t} onOpenReel={() => { trackEvent('video_play', { location: 'hero_reel' }); setActiveVideo({ url: VIDEO_URL, poster: VIDEO_POSTER, title: t('video_title'), subtitle: t('video_subtitle'), vertical: true }); }} />
+        <Hero t={t} onOpenReel={() => { trackEvent('video_play', { location: 'hero_reel' }); history.replaceState(null, '', '/videos'); setActiveVideo({ url: VIDEO_URL, poster: VIDEO_POSTER, title: t('video_title'), subtitle: t('video_subtitle'), vertical: true }); }} />
 
         {/* Catalog Section */}
         <section id="modelos" className="py-24 bg-white relative">
@@ -1521,7 +1521,7 @@ const App: React.FC = () => {
                 waLink={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(t('wa_msg_4'))}`}
                 onOpenTechSheet={() => { trackEvent('view_technical_sheet', { model: t('prod_4_title') }); openPdf(t('prod_4_title'), pdf4SeatPages); }}
                 onPersonalize={() => handlePersonalizeSelected("4-seat")}
-                onWatchVideo={() => { trackEvent('video_play', { model: t('prod_4_title'), location: 'product_card' }); setActiveVideo({ ...MODEL_VIDEOS["4-seat"], title: t('prod_4_title'), subtitle: t('prod_video_tag'), vertical: true }); }}
+                onWatchVideo={() => { trackEvent('video_play', { model: t('prod_4_title'), location: 'product_card' }); history.replaceState(null, '', '/videos/4-puestos'); setActiveVideo({ ...MODEL_VIDEOS["4-seat"], title: t('prod_4_title'), subtitle: t('prod_video_tag'), vertical: true }); }}
                 onLead={() => leadEvent('product_card', { model: t('prod_4_title'), price: 55900000 })}
                 t={t}
               />
@@ -1541,7 +1541,7 @@ const App: React.FC = () => {
                 waLink={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(t('wa_msg_6'))}`}
                 onOpenTechSheet={() => { trackEvent('view_technical_sheet', { model: t('prod_6_title') }); openPdf(t('prod_6_title'), pdf6SeatPages); }}
                 onPersonalize={() => handlePersonalizeSelected("6-seat")}
-                onWatchVideo={() => { trackEvent('video_play', { model: t('prod_6_title'), location: 'product_card' }); setActiveVideo({ ...MODEL_VIDEOS["6-seat"], title: t('prod_6_title'), subtitle: t('prod_video_tag'), vertical: true }); }}
+                onWatchVideo={() => { trackEvent('video_play', { model: t('prod_6_title'), location: 'product_card' }); history.replaceState(null, '', '/videos/6-puestos'); setActiveVideo({ ...MODEL_VIDEOS["6-seat"], title: t('prod_6_title'), subtitle: t('prod_video_tag'), vertical: true }); }}
                 onLead={() => leadEvent('product_card', { model: t('prod_6_title'), price: 59900000 })}
                 t={t}
               />
@@ -1654,7 +1654,7 @@ const App: React.FC = () => {
       />
 
       {/* Video Modal (hero reel + videos de modelos) */}
-      <VideoModal video={activeVideo} onClose={() => setActiveVideo(null)} t={t} />
+      <VideoModal video={activeVideo} onClose={() => { setActiveVideo(null); if (window.location.pathname.startsWith('/video')) history.replaceState(null, '', '/'); }} t={t} />
       
     </div>
   );
