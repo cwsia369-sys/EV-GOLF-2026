@@ -1383,7 +1383,7 @@ const Features = ({ t, lang }: { t: any, lang: string }) => {
 };
 
 const Footer = ({ t }: { t: any }) => (
-  <footer className="bg-navy text-white py-20 border-t border-gray-900">
+  <footer className="bg-navy text-white py-20 pb-28 sm:pb-20 border-t border-gray-900">
     <div className="container mx-auto px-6 text-center">
       <div className="text-4xl font-black mb-6 tracking-tighter">
         <span>EV</span>
@@ -1650,7 +1650,7 @@ const ChatAssistant = ({ lang, onLead, onOpenReel }: { lang: string, onLead: (lo
         <button
           onClick={openChat}
           aria-label={es ? 'Abrir chat' : 'Open chat'}
-          className="fixed bottom-5 right-5 z-[80] flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white pl-4 pr-5 py-3.5 rounded-full shadow-2xl shadow-green-600/30 transition-all duration-300 hover:scale-105"
+          className="fixed bottom-[84px] right-4 sm:bottom-5 sm:right-5 z-[80] flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white pl-4 pr-5 py-3.5 rounded-full shadow-2xl shadow-green-600/30 transition-all duration-300 hover:scale-105"
         >
           <span className="relative flex items-center justify-center">
             <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60 animate-ping" />
@@ -1732,6 +1732,26 @@ const FAQ = ({ lang }: { lang: string }) => {
         </div>
       </div>
     </section>
+  );
+};
+
+// =============================================================
+//  Barra fija inferior (solo móvil): precio + CTA directo a WhatsApp
+// =============================================================
+const MobileCTABar = ({ lang, onQuote }: { lang: string, onQuote: () => void }) => {
+  const es = lang === 'es';
+  return (
+    <div className="fixed bottom-0 inset-x-0 z-[75] sm:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-2.5 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="leading-tight shrink-0">
+        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{es ? 'Desde' : 'From'}</p>
+        <p className="text-navy font-black text-[15px]">$55.900.000</p>
+      </div>
+      <button onClick={onQuote}
+        className="shine flex-grow max-w-[60%] bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-green-500/20 transition-all">
+        <i className="fab fa-whatsapp text-base"></i>
+        {es ? 'Cotizar por WhatsApp' : 'Quote on WhatsApp'}
+      </button>
+    </div>
   );
 };
 
@@ -2060,6 +2080,76 @@ const App: React.FC = () => {
           </div>
         </section>
 
+        {/* Ahorro / ROI para empresas */}
+        <section className="py-24 bg-white border-t border-gray-100">
+          <div className="container mx-auto px-6">
+            <div className="reveal text-center max-w-3xl mx-auto mb-14">
+              <span className="text-luxuryGold font-extrabold tracking-[0.4em] uppercase text-[11px] mb-4 block">
+                {lang === 'es' ? 'Rentabilidad' : 'ROI'}
+              </span>
+              <h2 className="text-3xl md:text-5xl font-black text-navy mb-5 tracking-tight leading-none uppercase">
+                {lang === 'es' ? 'El eléctrico que se paga solo' : 'The electric that pays for itself'}
+              </h2>
+              <p className="text-gray-500 font-light leading-relaxed text-base md:text-lg">
+                {lang === 'es'
+                  ? 'Frente a un carro de combustión, un EV-GOLF cuesta mucho menos por kilómetro y casi no requiere mantenimiento. Ideal para hoteles, clubes y proyectos que lo usan a diario.'
+                  : 'Compared to a combustion cart, an EV-GOLF costs far less per kilometer and needs almost no maintenance. Ideal for hotels, clubs and projects that use it daily.'}
+              </p>
+            </div>
+
+            {/* Comparativa eléctrico vs combustión */}
+            <div className="reveal max-w-3xl mx-auto overflow-x-auto mb-12">
+              <table className="w-full bg-white rounded-3xl overflow-hidden luxury-shadow border border-gray-100 text-sm">
+                <thead>
+                  <tr className="bg-navy text-white">
+                    <th className="text-left px-5 py-4 font-bold text-xs uppercase tracking-wider"></th>
+                    <th className="px-4 py-4 font-black text-center">EV-GOLF ⚡<br /><span className="text-luxuryGold text-[10px] font-bold uppercase tracking-wider">{lang === 'es' ? 'Eléctrico' : 'Electric'}</span></th>
+                    <th className="px-4 py-4 font-black text-center text-gray-300">{lang === 'es' ? 'Combustión' : 'Combustion'}<br /><span className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">{lang === 'es' ? 'Gasolina' : 'Gasoline'}</span></th>
+                  </tr>
+                </thead>
+                <tbody className="text-navy">
+                  {[
+                    { f: lang === 'es' ? 'Costo de energía' : 'Energy cost', a: lang === 'es' ? 'Muy bajo (electricidad)' : 'Very low (electricity)', b: lang === 'es' ? 'Alto y variable' : 'High and variable' },
+                    { f: lang === 'es' ? 'Mantenimiento' : 'Maintenance', a: lang === 'es' ? 'Mínimo · pocas piezas' : 'Minimal · few parts', b: lang === 'es' ? 'Frecuente · aceite, filtros' : 'Frequent · oil, filters' },
+                    { f: lang === 'es' ? 'Ruido' : 'Noise', a: lang === 'es' ? 'Silencioso' : 'Silent', b: lang === 'es' ? 'Ruidoso' : 'Noisy' },
+                    { f: lang === 'es' ? 'Emisiones' : 'Emissions', a: lang === 'es' ? 'Cero' : 'Zero', b: lang === 'es' ? 'Gases y olores' : 'Fumes and smell' },
+                    { f: lang === 'es' ? 'Imagen del negocio' : 'Business image', a: lang === 'es' ? 'Premium y sostenible' : 'Premium & sustainable', b: lang === 'es' ? 'Estándar' : 'Standard' },
+                  ].map((r, i) => (
+                    <tr key={i} className={i % 2 ? 'bg-softGray/40' : 'bg-white'}>
+                      <td className="px-5 py-3.5 font-semibold text-gray-600 text-xs md:text-sm">{r.f}</td>
+                      <td className="px-4 py-3.5 text-center font-bold text-navy">{r.a}</td>
+                      <td className="px-4 py-3.5 text-center font-medium text-gray-400">{r.b}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Beneficios de rentabilidad */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {[
+                { icon: 'fa-plug-circle-bolt', es_t: 'Energía más barata', en_t: 'Cheaper energy', es_d: 'Cargarlo cuesta una fracción de lo que gastarías en combustible.', en_d: 'Charging it costs a fraction of what you would spend on fuel.' },
+                { icon: 'fa-screwdriver-wrench', es_t: 'Mantenimiento mínimo', en_t: 'Minimal maintenance', es_d: 'Menos piezas móviles = menos gastos, menos paradas.', en_d: 'Fewer moving parts = lower costs, less downtime.' },
+                { icon: 'fa-leaf', es_t: 'Imagen sostenible', en_t: 'Sustainable image', es_d: 'Mejora la experiencia del huésped y el valor de tu marca.', en_d: 'Improves guest experience and your brand value.' },
+              ].map((b, i) => (
+                <div key={b.icon} className="reveal group bg-softGray rounded-3xl p-7 border border-gray-100 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-luxuryGold/40" style={{ transitionDelay: `${i * 80}ms` }}>
+                  <div className="w-12 h-12 rounded-2xl bg-navy text-luxuryGold text-xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:bg-luxuryGold group-hover:text-navy">
+                    <i className={`fas ${b.icon}`}></i>
+                  </div>
+                  <h3 className="text-navy font-black text-base mb-2 tracking-tight">{lang === 'es' ? b.es_t : b.en_t}</h3>
+                  <p className="text-gray-500 text-sm font-light leading-relaxed">{lang === 'es' ? b.es_d : b.en_d}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="reveal text-center text-gray-400 text-xs font-medium mt-10 max-w-2xl mx-auto">
+              {lang === 'es'
+                ? 'El ahorro real depende de tu uso (horas al día, tarifas de tu zona). Un asesor te ayuda a estimarlo para tu caso.'
+                : 'Actual savings depend on your usage (hours per day, local rates). An advisor can help you estimate it for your case.'}
+            </p>
+          </div>
+        </section>
+
         {/* Cómo comprar — 3 pasos */}
         <section className="py-24 bg-white border-t border-gray-100">
           <div className="container mx-auto px-6">
@@ -2201,6 +2291,12 @@ const App: React.FC = () => {
 
       {/* Video Modal (hero reel + videos de modelos) */}
       <VideoModal video={activeVideo} onClose={() => { setActiveVideo(null); if (window.location.pathname.startsWith('/video')) history.replaceState(null, '', '/'); }} t={t} />
+
+      {/* Barra fija inferior (móvil) */}
+      <MobileCTABar
+        lang={lang}
+        onQuote={() => { leadEvent('mobile_bar'); window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(t('wa_msg_nav'))}`, '_blank'); }}
+      />
 
       {/* Chat-asistente guiado + handoff al asesor */}
       <ChatAssistant
