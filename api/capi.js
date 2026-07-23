@@ -16,12 +16,16 @@ const sha256 = (v) =>
   crypto.createHash('sha256').update(String(v).trim().toLowerCase()).digest('hex');
 
 export default async function handler(req, res) {
+  const TOKEN = process.env.META_CAPI_TOKEN;
+  const PIXEL_ID = process.env.META_PIXEL_ID || '1742726306716531';
+
+  // Health check por navegador (GET): dice si la CAPI ya tiene token, sin exponerlo.
+  if (req.method === 'GET') {
+    return res.status(200).json({ ok: true, configured: !!TOKEN, pixel_id: PIXEL_ID });
+  }
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'method_not_allowed' });
   }
-
-  const TOKEN = process.env.META_CAPI_TOKEN;
-  const PIXEL_ID = process.env.META_PIXEL_ID || '1742726306716531';
 
   // Sin token → no-op silencioso (la web sigue funcionando con el Pixel del navegador).
   if (!TOKEN) {

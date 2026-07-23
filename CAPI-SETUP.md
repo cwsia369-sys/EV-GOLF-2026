@@ -42,8 +42,8 @@ La CAPI envía tus conversiones a Meta **desde el servidor** (no solo desde el n
 ## ¿Cómo saber si está activo?
 
 - Abre en tu navegador: **https://evgolf.club/api/capi**
-  - Si responde `capi_not_configured` → aún **falta el token** (o el redeploy).
-  - Cuando esté bien configurado, los eventos empiezan a aparecer en Test Events.
+  - Si responde `"configured": false` → aún **falta el token** (o el redeploy).
+  - Si responde `"configured": true` → el token ya está puesto; verifica los eventos en **Test Events**.
 
 ---
 
