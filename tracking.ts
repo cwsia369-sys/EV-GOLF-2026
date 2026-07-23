@@ -22,7 +22,7 @@ const ENV: Record<string, string | undefined> =
 
 // --- Número de WhatsApp (env con fallback al actual) ---
 // Formato wa.me: código de país + número, solo dígitos, sin "+" ni espacios.
-export const WHATSAPP_NUMBER: string = ENV.VITE_WHATSAPP_NUMBER || "13053376447";
+export const WHATSAPP_NUMBER: string = ENV.VITE_WHATSAPP_NUMBER || "573005732546";
 
 // --- ID de Google Tag Manager (opcional) ---
 export const GTM_ID: string | undefined = ENV.VITE_GTM_ID;
