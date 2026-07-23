@@ -79,6 +79,8 @@ Ficha técnica ⚙️
 • Motor eléctrico 3.5 KW
 • Batería de litio 72V–100AH
 • Autonomía 80–90 km · hasta 35 km/h
+• Carga rápida 1 hora / normal 8 horas
+• Vida útil batería: 4–7 años
 • Pantalla HD 9" + cámara de reversa
 • Luces LED, Bluetooth, frenos hidráulicos
 • Asientos premium en cuero
@@ -104,7 +106,13 @@ Emitimos factura de la compra ✅
 **/garantia**
 ```
 Garantía 🛡️
-1 año de garantía de fábrica en todas las piezas. Te acompañamos ante cualquier novedad.
+1 año de garantía de fábrica. Cubre defectos de fábrica y piezas; no cubre piezas de desgaste normal por el uso. Te acompañamos durante ese periodo.
+```
+
+**/repuestos**
+```
+Repuestos 🛠️
+Se solicitan directamente a la fábrica y se importan. Coordinamos contigo el repuesto que necesites.
 ```
 
 **/video**
