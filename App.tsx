@@ -1414,103 +1414,170 @@ const Footer = ({ t }: { t: any }) => (
 );
 
 // =============================================================
-//  Botón flotante de WhatsApp + captura rápida (Nombre / Ciudad / Uso)
-//  Arma un mensaje CALIFICADO para que el asesor abra el chat con contexto.
+//  Chat-asistente guiado (preguntas y respuestas) + handoff al asesor
+//  Responde dudas al instante y pasa al asesor por WhatsApp CON contexto.
 // =============================================================
-const FloatingWhatsApp = ({ lang, onLead }: { lang: string, onLead: (loc: string, extra?: Record<string, any>) => void }) => {
+const ChatAssistant = ({ lang, onLead, onOpenReel }: { lang: string, onLead: (loc: string, extra?: Record<string, any>) => void, onOpenReel?: () => void }) => {
+  const es = lang === 'es';
   const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<{ from: 'bot' | 'user', text: string }[]>([]);
+  const [stage, setStage] = useState<'menu' | 'handoff'>('menu');
+  const [topics, setTopics] = useState<string[]>([]);
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
-  const [use, setUse] = useState('');
   const [model, setModel] = useState('');
+  const endRef = useRef<HTMLDivElement>(null);
 
-  const es = lang === 'es';
-  const uses = es
-    ? ['Hotel', 'Club', 'Finca', 'Resort', 'Conjunto residencial', 'Campo de golf', 'Proyecto turístico', 'Otro']
-    : ['Hotel', 'Club', 'Estate', 'Resort', 'Residential complex', 'Golf course', 'Tourism project', 'Other'];
+  const greeting = es
+    ? '¡Hola! 👋 Soy el asistente de EV-GOLF. Resuelvo tus dudas al instante. ¿Qué te gustaría saber?'
+    : "Hi! 👋 I'm the EV-GOLF assistant. I answer your questions instantly. What would you like to know?";
+
+  // Preguntas y respuestas (controladas — nunca inventa)
+  const qa: { key: string, label: string, topic: string, a: string }[] = es ? [
+    { key: 'precios', label: '💰 Precios', topic: 'precios', a: 'Precios de lanzamiento 🔥\n🚗 4 Puestos Luxury — $55.900.000 COP\n🚙 6 Puestos Family Resort — $59.900.000 COP\nIncluyen batería de litio, garantía de 1 año y entrega inmediata.' },
+    { key: 'ficha', label: '⚙️ Ficha técnica', topic: 'ficha técnica', a: 'Motor 3.5 KW · Batería litio 72V–100AH · Autonomía 80–90 km · hasta 35 km/h · Pantalla HD 9" + cámara de reversa · Luces LED · Bluetooth · Frenos hidráulicos · Asientos en cuero.' },
+    { key: 'entrega', label: '🚚 Entrega', topic: 'entrega', a: 'Tenemos unidades nuevas con ENTREGA INMEDIATA. Despachamos a todo el país hasta tu ciudad o proyecto. 🚚' },
+    { key: 'garantia', label: '🛡️ Garantía', topic: 'garantía', a: '1 año de garantía de fábrica en todas las piezas. Te acompañamos ante cualquier novedad. 🛡️' },
+    { key: 'pago', label: '💳 Pago y factura', topic: 'pago y factura', a: 'La compra es de contado. Aceptamos transferencia, PSE, efectivo y tarjeta. Emitimos factura de la compra ✅' },
+    { key: 'bateria', label: '🔋 Batería', topic: 'batería', a: 'Batería de litio 72V–100AH. Autonomía de 80–90 km por carga y hasta 35 km/h. Se recarga en un tomacorriente normal. 🔋' },
+    { key: 'modelo', label: '🤔 ¿4 o 6 puestos?', topic: '¿4 o 6 puestos?', a: '4 Puestos → ideal para fincas, conjuntos y clubes.\n6 Puestos → ideal para hoteles, resorts y grupos grandes.\n¿Cuántas personas necesitas mover? Un asesor te ayuda a elegir 😉' },
+    { key: 'usos', label: '🏨 ¿Dónde se usan?', topic: 'usos', a: 'Hoteles, resorts, clubes, conjuntos, fincas, campos de golf, glamping y proyectos turísticos. Son para espacios privados (no vías públicas).' },
+  ] : [
+    { key: 'precios', label: '💰 Pricing', topic: 'pricing', a: 'Launch prices 🔥\n🚗 4-Seat Luxury — $55,900,000 COP\n🚙 6-Seat Family Resort — $59,900,000 COP\nInclude lithium battery, 1-year warranty and immediate delivery.' },
+    { key: 'ficha', label: '⚙️ Tech specs', topic: 'tech specs', a: '3.5 KW motor · Lithium battery 72V–100AH · Range 80–90 km · up to 35 km/h · 9" HD screen + rear camera · LED lights · Bluetooth · Hydraulic brakes · Leather seats.' },
+    { key: 'entrega', label: '🚚 Delivery', topic: 'delivery', a: 'We have brand-new units with IMMEDIATE DELIVERY. We ship nationwide to your city or project. 🚚' },
+    { key: 'garantia', label: '🛡️ Warranty', topic: 'warranty', a: '1-year factory warranty on all parts. We support you with any issue. 🛡️' },
+    { key: 'pago', label: '💳 Payment & invoice', topic: 'payment', a: 'Purchase is paid in full. We accept bank transfer, PSE, cash and card. We issue a purchase invoice ✅' },
+    { key: 'bateria', label: '🔋 Battery', topic: 'battery', a: 'Lithium battery 72V–100AH. Range 80–90 km per charge, up to 35 km/h. Recharges from a standard outlet. 🔋' },
+    { key: 'modelo', label: '🤔 4 or 6 seats?', topic: '4 or 6 seats', a: '4-Seat → ideal for estates, condos and clubs.\n6-Seat → ideal for hotels, resorts and larger groups.\nHow many people do you need to move? An advisor can help you choose 😉' },
+    { key: 'usos', label: '🏨 Where are they used?', topic: 'use cases', a: 'Hotels, resorts, clubs, condos, estates, golf courses, glamping and tourism projects. For private spaces (not public roads).' },
+  ];
+
   const models = es
     ? [{ v: '4 Puestos Luxury Edition', l: '4 Puestos' }, { v: '6 Puestos Family Resort', l: '6 Puestos' }, { v: 'Aún no sé / quiero asesoría', l: 'No estoy seguro' }]
-    : [{ v: '4-Seat Luxury Edition', l: '4-Seat' }, { v: '6-Seat Family Resort', l: '6-Seat' }, { v: "Not sure / need advice", l: "Not sure yet" }];
+    : [{ v: '4-Seat Luxury Edition', l: '4-Seat' }, { v: '6-Seat Family Resort', l: '6-Seat' }, { v: 'Not sure / need advice', l: 'Not sure yet' }];
 
-  const send = () => {
-    const parts = es
-      ? [
-          `Hola EV-GOLF${name ? `, soy ${name.trim()}` : ''}${city ? ` de ${city.trim()}` : ''}.`,
-          model ? `Me interesa el ${model}.` : 'Me interesan los carros de golf eléctricos.',
-          use ? `Lo necesito para: ${use}.` : '',
-          'Quiero fotos, disponibilidad y precio con entrega inmediata.',
-        ]
-      : [
-          `Hi EV-GOLF${name ? `, I'm ${name.trim()}` : ''}${city ? ` from ${city.trim()}` : ''}.`,
-          model ? `I'm interested in the ${model}.` : "I'm interested in the electric golf carts.",
-          use ? `I need it for: ${use}.` : '',
-          'I want photos, availability and pricing with immediate delivery.',
-        ];
-    const message = parts.filter(Boolean).join(' ');
-    onLead('floating_quick_quote', { model: model || undefined, city: city || undefined, use: use || undefined });
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
-    setOpen(false);
+  useEffect(() => {
+    if (open) endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, open, stage]);
+
+  const openChat = () => {
+    setOpen(true);
+    if (messages.length === 0) setMessages([{ from: 'bot', text: greeting }]);
+  };
+
+  const ask = (item: { key: string, label: string, topic: string, a: string }) => {
+    const clean = item.label.replace(/^[^\wÀ-ÿ¿]+/, '').trim();
+    setMessages((m) => [...m, { from: 'user', text: clean }, { from: 'bot', text: item.a }]);
+    setTopics((t) => (t.includes(item.key) ? t : [...t, item.key]));
+    onLead('chat_question', { question: item.key });
+  };
+
+  const goVideo = () => {
+    setMessages((m) => [...m, { from: 'user', text: es ? '🎥 Ver video' : '🎥 Watch video' }, { from: 'bot', text: es ? '¡Genial! Te muestro el video 🎥' : 'Great! Here is the video 🎥' }]);
+    onLead('chat_video');
+    if (onOpenReel) { setOpen(false); setTimeout(onOpenReel, 250); }
+  };
+
+  const startHandoff = () => {
+    setStage('handoff');
+    setMessages((m) => [...m,
+      { from: 'user', text: es ? '👤 Hablar con un asesor' : '👤 Talk to an advisor' },
+      { from: 'bot', text: es ? '¡Con gusto! 😊 Déjame tus datos y te paso con un asesor por WhatsApp:' : "Sure! 😊 Leave your details and I'll connect you with an advisor on WhatsApp:" },
+    ]);
+  };
+
+  const sendToAdvisor = () => {
+    const topicLabels = topics.map((k) => qa.find((q) => q.key === k)?.topic).filter(Boolean).join(', ');
+    const msg = es
+      ? `Hola EV-GOLF${name ? `, soy ${name.trim()}` : ''}${city ? ` de ${city.trim()}` : ''}. ${model ? `Me interesa el ${model}.` : 'Me interesan los carros de golf eléctricos.'}${topicLabels ? ` Ya vi en la web: ${topicLabels}.` : ''} Quiero hablar con un asesor sobre disponibilidad y precio con entrega inmediata.`
+      : `Hi EV-GOLF${name ? `, I'm ${name.trim()}` : ''}${city ? ` from ${city.trim()}` : ''}. ${model ? `I'm interested in the ${model}.` : "I'm interested in the electric golf carts."}${topicLabels ? ` I already checked: ${topicLabels}.` : ''} I'd like to talk to an advisor about availability and pricing with immediate delivery.`;
+    onLead('chat_handoff', { model: model || undefined, city: city || undefined, topics: topics.join('|') || undefined });
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   return (
     <>
-      {/* Popover de captura */}
+      {/* Ventana de chat */}
       {open && (
-        <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center sm:justify-end p-0 sm:p-6">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="relative w-full sm:w-[380px] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className="fixed inset-0 sm:inset-auto sm:bottom-5 sm:right-5 z-[90] flex items-end sm:items-stretch justify-center sm:justify-end">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm sm:hidden" onClick={() => setOpen(false)} />
+          <div className="relative w-full sm:w-[380px] h-[82vh] sm:h-[600px] sm:max-h-[80vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-in slide-in-from-bottom-4 fade-in duration-300">
             {/* Header */}
-            <div className="bg-navy px-6 py-5 flex items-center gap-3">
-              <span className="w-11 h-11 rounded-full bg-[#25D366] flex items-center justify-center text-white text-xl shrink-0">
+            <div className="bg-navy px-5 py-4 flex items-center gap-3 shrink-0">
+              <span className="relative w-11 h-11 rounded-full bg-[#25D366] flex items-center justify-center text-white text-xl shrink-0">
                 <i className="fab fa-whatsapp"></i>
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-400 border-2 border-navy" />
               </span>
               <div className="flex-grow">
-                <p className="text-white font-black text-base leading-tight">{es ? 'Cotiza en 30 segundos' : 'Get a quote in 30s'}</p>
+                <p className="text-white font-black text-base leading-tight">{es ? 'Asistente EV-GOLF' : 'EV-GOLF Assistant'}</p>
                 <p className="text-luxuryGold text-[11px] font-bold flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  {es ? 'Te respondemos en minutos' : 'We reply within minutes'}
+                  {es ? 'En línea · responde al instante' : 'Online · instant replies'}
                 </p>
               </div>
-              <button onClick={() => setOpen(false)} aria-label="Cerrar" className="text-white/60 hover:text-white text-lg w-8 h-8 flex items-center justify-center">
+              <button onClick={() => setOpen(false)} aria-label={es ? 'Cerrar' : 'Close'} className="text-white/60 hover:text-white text-lg w-8 h-8 flex items-center justify-center">
                 <i className="fas fa-times"></i>
               </button>
             </div>
-            {/* Form */}
-            <div className="p-5 space-y-3">
-              <input
-                value={name} onChange={(e) => setName(e.target.value)}
-                placeholder={es ? 'Tu nombre' : 'Your name'}
-                className="w-full bg-softGray border border-gray-200 rounded-xl px-4 py-3 text-sm text-navy placeholder-gray-400 focus:outline-none focus:border-luxuryGold focus:ring-1 focus:ring-luxuryGold transition"
-              />
-              <input
-                value={city} onChange={(e) => setCity(e.target.value)}
-                placeholder={es ? 'Ciudad' : 'City'}
-                className="w-full bg-softGray border border-gray-200 rounded-xl px-4 py-3 text-sm text-navy placeholder-gray-400 focus:outline-none focus:border-luxuryGold focus:ring-1 focus:ring-luxuryGold transition"
-              />
-              <select
-                value={use} onChange={(e) => setUse(e.target.value)}
-                className={`w-full bg-softGray border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-luxuryGold focus:ring-1 focus:ring-luxuryGold transition ${use ? 'text-navy' : 'text-gray-400'}`}
-              >
-                <option value="">{es ? '¿Para qué lo usarás?' : 'What will you use it for?'}</option>
-                {uses.map((u) => <option key={u} value={u} className="text-navy">{u}</option>)}
-              </select>
-              <select
-                value={model} onChange={(e) => setModel(e.target.value)}
-                className={`w-full bg-softGray border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-luxuryGold focus:ring-1 focus:ring-luxuryGold transition ${model ? 'text-navy' : 'text-gray-400'}`}
-              >
-                <option value="">{es ? 'Modelo de interés (opcional)' : 'Model of interest (optional)'}</option>
-                {models.map((m) => <option key={m.v} value={m.v} className="text-navy">{m.l}</option>)}
-              </select>
-              <button
-                onClick={send}
-                className="shine w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-green-500/20"
-              >
-                <i className="fab fa-whatsapp text-lg"></i>
-                {es ? 'Cotizar por WhatsApp' : 'Quote on WhatsApp'}
-              </button>
-              <p className="text-center text-[10px] text-gray-400 font-medium">
-                {es ? 'Sin compromiso · Asesoría directa' : 'No commitment · Direct advice'}
-              </p>
+
+            {/* Mensajes */}
+            <div className="flex-grow overflow-y-auto scrollbar-hide px-4 py-4 space-y-2.5 bg-softGray">
+              {messages.map((m, i) => (
+                <div key={i} className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line shadow-sm ${m.from === 'user' ? 'bg-[#25D366] text-white rounded-2xl rounded-br-md' : 'bg-white text-navy rounded-2xl rounded-bl-md border border-gray-100'}`}>
+                    {m.text}
+                  </div>
+                </div>
+              ))}
+              <div ref={endRef} />
+            </div>
+
+            {/* Footer: menú o formulario de handoff */}
+            <div className="shrink-0 border-t border-gray-100 bg-white p-3">
+              {stage === 'menu' ? (
+                <>
+                  <div className="flex flex-wrap gap-2 max-h-[128px] overflow-y-auto scrollbar-hide mb-2.5">
+                    {qa.map((item) => (
+                      <button key={item.key} onClick={() => ask(item)}
+                        className="text-xs font-bold text-navy bg-softGray hover:bg-luxuryGold hover:text-navy border border-gray-200 hover:border-luxuryGold rounded-full px-3 py-2 transition-all duration-200">
+                        {item.label}
+                      </button>
+                    ))}
+                    <button onClick={goVideo}
+                      className="text-xs font-bold text-navy bg-softGray hover:bg-luxuryGold border border-gray-200 hover:border-luxuryGold rounded-full px-3 py-2 transition-all duration-200">
+                      {es ? '🎥 Ver video' : '🎥 Watch video'}
+                    </button>
+                  </div>
+                  <button onClick={startHandoff}
+                    className="shine w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-green-500/20">
+                    <i className="fab fa-whatsapp text-base"></i>
+                    {es ? 'Hablar con un asesor' : 'Talk to an advisor'}
+                  </button>
+                </>
+              ) : (
+                <div className="space-y-2.5">
+                  <div className="flex gap-2">
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={es ? 'Tu nombre' : 'Your name'}
+                      className="w-1/2 bg-softGray border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-navy placeholder-gray-400 focus:outline-none focus:border-luxuryGold transition" />
+                    <input value={city} onChange={(e) => setCity(e.target.value)} placeholder={es ? 'Ciudad' : 'City'}
+                      className="w-1/2 bg-softGray border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-navy placeholder-gray-400 focus:outline-none focus:border-luxuryGold transition" />
+                  </div>
+                  <select value={model} onChange={(e) => setModel(e.target.value)}
+                    className={`w-full bg-softGray border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-luxuryGold transition ${model ? 'text-navy' : 'text-gray-400'}`}>
+                    <option value="">{es ? 'Modelo de interés (opcional)' : 'Model of interest (optional)'}</option>
+                    {models.map((m) => <option key={m.v} value={m.v} className="text-navy">{m.l}</option>)}
+                  </select>
+                  <button onClick={sendToAdvisor}
+                    className="shine w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-green-500/20">
+                    <i className="fab fa-whatsapp text-base"></i>
+                    {es ? 'Abrir WhatsApp' : 'Open WhatsApp'}
+                  </button>
+                  <button onClick={() => setStage('menu')} className="w-full text-gray-400 hover:text-navy text-xs font-bold py-1 transition">
+                    {es ? '← Volver a las preguntas' : '← Back to questions'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1519,15 +1586,15 @@ const FloatingWhatsApp = ({ lang, onLead }: { lang: string, onLead: (loc: string
       {/* Botón flotante */}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
-          aria-label={lang === 'es' ? 'Cotizar por WhatsApp' : 'Quote on WhatsApp'}
-          className="fixed bottom-5 right-5 z-[80] flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white pl-4 pr-5 py-3.5 rounded-full shadow-2xl shadow-green-600/30 transition-all duration-300 hover:scale-105 group"
+          onClick={openChat}
+          aria-label={es ? 'Abrir chat' : 'Open chat'}
+          className="fixed bottom-5 right-5 z-[80] flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white pl-4 pr-5 py-3.5 rounded-full shadow-2xl shadow-green-600/30 transition-all duration-300 hover:scale-105"
         >
           <span className="relative flex items-center justify-center">
             <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60 animate-ping" />
             <i className="fab fa-whatsapp text-2xl relative"></i>
           </span>
-          <span className="font-black text-sm hidden sm:inline">{lang === 'es' ? 'Cotizar ahora' : 'Get a quote'}</span>
+          <span className="font-black text-sm hidden sm:inline">{es ? 'Chatea ahora' : 'Chat now'}</span>
         </button>
       )}
     </>
@@ -2071,8 +2138,12 @@ const App: React.FC = () => {
       {/* Video Modal (hero reel + videos de modelos) */}
       <VideoModal video={activeVideo} onClose={() => { setActiveVideo(null); if (window.location.pathname.startsWith('/video')) history.replaceState(null, '', '/'); }} t={t} />
 
-      {/* Botón flotante de WhatsApp con captura rápida */}
-      <FloatingWhatsApp lang={lang} onLead={leadEvent} />
+      {/* Chat-asistente guiado + handoff al asesor */}
+      <ChatAssistant
+        lang={lang}
+        onLead={leadEvent}
+        onOpenReel={() => { trackEvent('video_play', { location: 'chat_reel' }); history.replaceState(null, '', '/videos'); setActiveVideo({ url: VIDEO_URL, poster: VIDEO_POSTER, title: t('video_title'), subtitle: t('video_subtitle'), vertical: true }); }}
+      />
 
     </div>
   );
