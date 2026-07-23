@@ -105,6 +105,7 @@ const translations: Record<string, any> = {
     footer_copy: "© EV-GOLF Colombia | Carros de golf eléctricos con entrega inmediata en Colombia",
     modal_tech_spec: "Especificaciones Técnicas",
     modal_secure: "Visualización Segura - No disponible para descarga",
+    modal_download: "Descargar PDF",
     modal_close: "Cerrar Visualización",
     modal_copyright: "Propiedad intelectual reservada EV-GOLF Colombia",
     wa_msg_4: "Hola EV-GOLF, me interesa el 4 Puestos Luxury Edition ($55.900.000 COP). Quiero fotos, videos, ficha técnica y disponibilidad para entrega inmediata.",
@@ -209,6 +210,7 @@ const translations: Record<string, any> = {
     footer_copy: "© EV-GOLF Colombia | Electric golf carts with immediate delivery in Colombia",
     modal_tech_spec: "Technical Specifications",
     modal_secure: "Secure Viewing - Not available for download",
+    modal_download: "Download PDF",
     modal_close: "Close Viewer",
     modal_copyright: "Intellectual Property Reserved EV-GOLF Colombia",
     wa_msg_4: "Hi EV-GOLF, I'm interested in the 4-Seat Luxury Edition ($55,900,000 COP). I'd like photos, videos, the technical sheet and availability for immediate delivery.",
@@ -507,7 +509,7 @@ const VideoModal = ({ video, onClose, t }: { video: VideoConfig | null, onClose:
 };
 
 // Component for Technical Sheet Viewer (Modal)
-const TechnicalSheetModal = ({ isOpen, onClose, title, pages, t }: { isOpen: boolean, onClose: () => void, title: string, pages: string[], t: any }) => {
+const TechnicalSheetModal = ({ isOpen, onClose, title, pages, pdfUrl, t }: { isOpen: boolean, onClose: () => void, title: string, pages: string[], pdfUrl?: string, t: any }) => {
   useEffect(() => {
     if (!isOpen) return;
     const handleKeydown = (e: KeyboardEvent) => {
@@ -547,12 +549,25 @@ const TechnicalSheetModal = ({ isOpen, onClose, title, pages, t }: { isOpen: boo
               <h3 className="text-lg md:text-xl font-black text-navy uppercase tracking-tighter leading-tight">{title}</h3>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="w-12 h-12 flex items-center justify-center rounded-full bg-softGray text-navy hover:bg-navy hover:text-white transition-all duration-300 shadow-sm"
-          >
-            <i className="fas fa-times"></i>
-          </button>
+          <div className="flex items-center gap-2">
+            {pdfUrl && (
+              <a
+                href={pdfUrl}
+                download
+                onClick={() => trackEvent('download_tech_sheet', { model: title })}
+                className="flex items-center gap-2 bg-luxuryGold hover:bg-navy text-navy hover:text-white font-black text-xs uppercase tracking-wider px-3.5 sm:px-4 py-2.5 rounded-full transition-all duration-300 shadow-sm"
+              >
+                <i className="fas fa-file-arrow-down text-sm"></i>
+                <span className="hidden sm:inline">{t('modal_download')}</span>
+              </a>
+            )}
+            <button
+              onClick={onClose}
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-softGray text-navy hover:bg-navy hover:text-white transition-all duration-300 shadow-sm"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
         </div>
 
         {/* Content - Protected Viewer */}
@@ -1842,10 +1857,11 @@ const App: React.FC = () => {
     }
   };
 
-  const [modalData, setModalData] = useState<{ isOpen: boolean, title: string, pages: string[] }>({
+  const [modalData, setModalData] = useState<{ isOpen: boolean, title: string, pages: string[], pdfUrl?: string }>({
     isOpen: false,
     title: '',
-    pages: []
+    pages: [],
+    pdfUrl: undefined
   });
 
   // Video modal (reutilizable: hero reel + videos de cada modelo)
@@ -1872,9 +1888,9 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const openPdf = (title: string, pages: string[]) => {
-    setModalData({ isOpen: true, title, pages });
-    document.body.style.overflow = 'hidden'; 
+  const openPdf = (title: string, pages: string[], pdfUrl?: string) => {
+    setModalData({ isOpen: true, title, pages, pdfUrl });
+    document.body.style.overflow = 'hidden';
   };
 
   const closePdf = () => {
@@ -1930,7 +1946,7 @@ const App: React.FC = () => {
                   "https://i.ibb.co/SX8bnG65/Chat-GPT-Image-Jan-26-2026-11-50-56-AM.png"
                 ]}
                 waLink={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(t('wa_msg_4'))}`}
-                onOpenTechSheet={() => { trackEvent('view_technical_sheet', { model: t('prod_4_title') }); openPdf(t('prod_4_title'), pdf4SeatPages); }}
+                onOpenTechSheet={() => { trackEvent('view_technical_sheet', { model: t('prod_4_title') }); openPdf(t('prod_4_title'), pdf4SeatPages, '/fichas/ficha-4-puestos.pdf'); }}
                 onPersonalize={() => handlePersonalizeSelected("4-seat")}
                 onWatchVideo={() => { trackEvent('video_play', { model: t('prod_4_title'), location: 'product_card' }); history.replaceState(null, '', '/videos/4-puestos'); setActiveVideo({ ...MODEL_VIDEOS["4-seat"], title: t('prod_4_title'), subtitle: t('prod_video_tag'), vertical: true }); }}
                 onLead={() => leadEvent('product_card', { model: t('prod_4_title'), price: 55900000 })}
@@ -1951,7 +1967,7 @@ const App: React.FC = () => {
                   "https://i.ibb.co/gb0QnKdw/Chat-GPT-Image-Jan-26-2026-04-08-12-PM.png"
                 ]}
                 waLink={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(t('wa_msg_6'))}`}
-                onOpenTechSheet={() => { trackEvent('view_technical_sheet', { model: t('prod_6_title') }); openPdf(t('prod_6_title'), pdf6SeatPages); }}
+                onOpenTechSheet={() => { trackEvent('view_technical_sheet', { model: t('prod_6_title') }); openPdf(t('prod_6_title'), pdf6SeatPages, '/fichas/ficha-6-puestos.pdf'); }}
                 onPersonalize={() => handlePersonalizeSelected("6-seat")}
                 onWatchVideo={() => { trackEvent('video_play', { model: t('prod_6_title'), location: 'product_card' }); history.replaceState(null, '', '/videos/6-puestos'); setActiveVideo({ ...MODEL_VIDEOS["6-seat"], title: t('prod_6_title'), subtitle: t('prod_video_tag'), vertical: true }); }}
                 onLead={() => leadEvent('product_card', { model: t('prod_6_title'), price: 59900000 })}
@@ -2286,6 +2302,7 @@ const App: React.FC = () => {
         onClose={closePdf}
         title={modalData.title}
         pages={modalData.pages}
+        pdfUrl={modalData.pdfUrl}
         t={t}
       />
 
