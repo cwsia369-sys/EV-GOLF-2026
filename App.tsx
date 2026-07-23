@@ -1426,6 +1426,7 @@ const ChatAssistant = ({ lang, onLead, onOpenReel }: { lang: string, onLead: (lo
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
   const [model, setModel] = useState('');
+  const [input, setInput] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
   const greeting = es
@@ -1435,20 +1436,26 @@ const ChatAssistant = ({ lang, onLead, onOpenReel }: { lang: string, onLead: (lo
   // Preguntas y respuestas (controladas — nunca inventa)
   const qa: { key: string, label: string, topic: string, a: string }[] = es ? [
     { key: 'precios', label: '💰 Precios', topic: 'precios', a: 'Precios de lanzamiento 🔥\n🚗 4 Puestos Luxury — $55.900.000 COP\n🚙 6 Puestos Family Resort — $59.900.000 COP\nIncluyen batería de litio, garantía de 1 año y entrega inmediata.' },
-    { key: 'ficha', label: '⚙️ Ficha técnica', topic: 'ficha técnica', a: 'Motor 3.5 KW · Batería litio 72V–100AH · Autonomía 80–90 km · hasta 35 km/h · Pantalla HD 9" + cámara de reversa · Luces LED · Bluetooth · Frenos hidráulicos · Asientos en cuero.' },
+    { key: 'negociable', label: '💲 ¿Es negociable?', topic: 'precio', a: 'El precio de lanzamiento ya es un valor especial por tiempo limitado 🔥. Para condiciones particulares o compra de varias unidades, un asesor con gusto revisa opciones contigo. ¿Te comunico con uno? 😊' },
+    { key: 'incluye', label: '📦 ¿Qué incluye?', topic: 'qué incluye', a: 'Cada unidad incluye: batería de litio, pantalla HD 9" + cámara de reversa, luces LED y direccionales, Bluetooth, frenos hidráulicos, suspensión independiente MacPherson, llantas rin 14" y asientos premium en cuero. ✅' },
+    { key: 'ficha', label: '⚙️ Ficha técnica', topic: 'ficha técnica', a: 'Motor 3.5 KW · Batería litio 72V–100AH · Autonomía 80–90 km · hasta 35 km/h · Pantalla HD 9" + cámara de reversa · Luces LED · Bluetooth · Frenos hidráulicos · Suspensión MacPherson · Llantas rin 14" · Asientos en cuero.' },
+    { key: 'bateria', label: '🔋 Batería y carga', topic: 'batería', a: 'Batería de litio 72V–100AH ⚡, de larga vida útil y bajo mantenimiento. Autonomía de 80–90 km por carga (hasta 35 km/h) y se recarga en un tomacorriente convencional. El tiempo exacto de carga y la vida útil según tu uso te los confirma un asesor.' },
+    { key: 'garantia', label: '🛡️ Garantía', topic: 'garantía', a: '1 año de garantía de fábrica en todas las piezas 🛡️. Un asesor te confirma el detalle de cobertura de batería y motor. Te acompañamos ante cualquier novedad.' },
+    { key: 'servicio', label: '🛠️ Repuestos y servicio', topic: 'repuestos y servicio', a: 'Coordinamos servicio y repuestos para tu EV-GOLF. Un asesor te indica el detalle según tu ciudad. 🛠️' },
     { key: 'entrega', label: '🚚 Entrega', topic: 'entrega', a: 'Tenemos unidades nuevas con ENTREGA INMEDIATA. Despachamos a todo el país hasta tu ciudad o proyecto. 🚚' },
-    { key: 'garantia', label: '🛡️ Garantía', topic: 'garantía', a: '1 año de garantía de fábrica en todas las piezas. Te acompañamos ante cualquier novedad. 🛡️' },
     { key: 'pago', label: '💳 Pago y factura', topic: 'pago y factura', a: 'La compra es de contado. Aceptamos transferencia, PSE, efectivo y tarjeta. Emitimos factura de la compra ✅' },
-    { key: 'bateria', label: '🔋 Batería', topic: 'batería', a: 'Batería de litio 72V–100AH. Autonomía de 80–90 km por carga y hasta 35 km/h. Se recarga en un tomacorriente normal. 🔋' },
     { key: 'modelo', label: '🤔 ¿4 o 6 puestos?', topic: '¿4 o 6 puestos?', a: '4 Puestos → ideal para fincas, conjuntos y clubes.\n6 Puestos → ideal para hoteles, resorts y grupos grandes.\n¿Cuántas personas necesitas mover? Un asesor te ayuda a elegir 😉' },
     { key: 'usos', label: '🏨 ¿Dónde se usan?', topic: 'usos', a: 'Hoteles, resorts, clubes, conjuntos, fincas, campos de golf, glamping y proyectos turísticos. Son para espacios privados (no vías públicas).' },
   ] : [
     { key: 'precios', label: '💰 Pricing', topic: 'pricing', a: 'Launch prices 🔥\n🚗 4-Seat Luxury — $55,900,000 COP\n🚙 6-Seat Family Resort — $59,900,000 COP\nInclude lithium battery, 1-year warranty and immediate delivery.' },
-    { key: 'ficha', label: '⚙️ Tech specs', topic: 'tech specs', a: '3.5 KW motor · Lithium battery 72V–100AH · Range 80–90 km · up to 35 km/h · 9" HD screen + rear camera · LED lights · Bluetooth · Hydraulic brakes · Leather seats.' },
+    { key: 'negociable', label: '💲 Is it negotiable?', topic: 'price', a: 'The launch price is already a special, limited-time value 🔥. For particular conditions or multiple units, an advisor will gladly review options with you. Shall I connect you? 😊' },
+    { key: 'incluye', label: '📦 What\'s included?', topic: 'what\'s included', a: 'Each unit includes: lithium battery, 9" HD screen + rear camera, LED lights and turn signals, Bluetooth, hydraulic brakes, independent MacPherson suspension, 14" rims and premium leather seats. ✅' },
+    { key: 'ficha', label: '⚙️ Tech specs', topic: 'tech specs', a: '3.5 KW motor · Lithium battery 72V–100AH · Range 80–90 km · up to 35 km/h · 9" HD screen + rear camera · LED lights · Bluetooth · Hydraulic brakes · MacPherson suspension · 14" rims · Leather seats.' },
+    { key: 'bateria', label: '🔋 Battery & charging', topic: 'battery', a: 'Lithium battery 72V–100AH ⚡, long service life and low maintenance. Range 80–90 km per charge (up to 35 km/h), recharges from a standard outlet. An advisor confirms the exact charging time and lifespan based on your use.' },
+    { key: 'garantia', label: '🛡️ Warranty', topic: 'warranty', a: '1-year factory warranty on all parts 🛡️. An advisor confirms battery and motor coverage details. We support you with any issue.' },
+    { key: 'servicio', label: '🛠️ Parts & service', topic: 'parts & service', a: 'We coordinate service and parts for your EV-GOLF. An advisor gives you the details based on your city. 🛠️' },
     { key: 'entrega', label: '🚚 Delivery', topic: 'delivery', a: 'We have brand-new units with IMMEDIATE DELIVERY. We ship nationwide to your city or project. 🚚' },
-    { key: 'garantia', label: '🛡️ Warranty', topic: 'warranty', a: '1-year factory warranty on all parts. We support you with any issue. 🛡️' },
     { key: 'pago', label: '💳 Payment & invoice', topic: 'payment', a: 'Purchase is paid in full. We accept bank transfer, PSE, cash and card. We issue a purchase invoice ✅' },
-    { key: 'bateria', label: '🔋 Battery', topic: 'battery', a: 'Lithium battery 72V–100AH. Range 80–90 km per charge, up to 35 km/h. Recharges from a standard outlet. 🔋' },
     { key: 'modelo', label: '🤔 4 or 6 seats?', topic: '4 or 6 seats', a: '4-Seat → ideal for estates, condos and clubs.\n6-Seat → ideal for hotels, resorts and larger groups.\nHow many people do you need to move? An advisor can help you choose 😉' },
     { key: 'usos', label: '🏨 Where are they used?', topic: 'use cases', a: 'Hotels, resorts, clubs, condos, estates, golf courses, glamping and tourism projects. For private spaces (not public roads).' },
   ];
@@ -1477,6 +1484,48 @@ const ChatAssistant = ({ lang, onLead, onOpenReel }: { lang: string, onLead: (lo
     setMessages((m) => [...m, { from: 'user', text: es ? '🎥 Ver video' : '🎥 Watch video' }, { from: 'bot', text: es ? '¡Genial! Te muestro el video 🎥' : 'Great! Here is the video 🎥' }]);
     onLead('chat_video');
     if (onOpenReel) { setOpen(false); setTimeout(onOpenReel, 250); }
+  };
+
+  // Interpreta texto libre por palabras clave (sin tildes) → devuelve el key del tema o null
+  const matchTopic = (raw: string): string | null => {
+    const s = raw.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const rules: { keys: string[], topic: string }[] = [
+      { keys: ['negoci', 'descuento', 'rebaj', 'discount', 'oferta', 'mejor precio'], topic: 'negociable' },
+      { keys: ['precio', 'cuesta', 'vale', 'cuanto', 'valor', 'cost', 'price', 'plata'], topic: 'precios' },
+      { keys: ['bateria', 'battery', 'carga', 'charg', 'litio', 'lithium', 'autonom', 'rinde', 'dura la bat', 'kilometr', 'km'], topic: 'bateria' },
+      { keys: ['garant', 'warranty', 'respaldo'], topic: 'garantia' },
+      { keys: ['repuesto', 'servicio', 'mantenim', 'service', 'part', 'tecnic', 'reparac'], topic: 'servicio' },
+      { keys: ['incluye', 'trae', 'include', 'viene con', 'accesorio'], topic: 'incluye' },
+      { keys: ['ficha', 'especific', 'spec', 'motor', 'velocidad', 'speed', 'potencia'], topic: 'ficha' },
+      { keys: ['entrega', 'envio', 'despacho', 'deliver', 'ship', 'llega', 'domicilio'], topic: 'entrega' },
+      { keys: ['pago', 'pagar', 'factura', 'invoice', 'payment', 'financ', 'credito', 'cuota', 'tarjeta', 'transferencia'], topic: 'pago' },
+      { keys: ['4 o 6', '4 y 6', 'cual model', 'que model', 'diferencia', 'recomiend', 'puestos', 'seats', 'personas', 'capacidad'], topic: 'modelo' },
+      { keys: ['sirve', 'usar', 'donde', 'uso', 'hotel', 'finca', 'club', 'resort', 'conjunto', 'golf', 'glamping'], topic: 'usos' },
+      { keys: ['video', 'ver el carro', 'movimiento', 'accion'], topic: 'video' },
+      { keys: ['asesor', 'humano', 'persona', 'hablar', 'llamar', 'contacto', 'whatsapp', 'comprar', 'quiero uno'], topic: 'asesor' },
+    ];
+    for (const r of rules) if (r.keys.some((k) => s.includes(k))) return r.topic;
+    return null;
+  };
+
+  const handleFreeText = () => {
+    const text = input.trim();
+    if (!text) return;
+    setInput('');
+    setMessages((m) => [...m, { from: 'user', text }]);
+    const topic = matchTopic(text);
+    onLead('chat_freetext', { matched: topic || 'none' });
+    if (topic === 'video') { setTimeout(goVideo, 150); return; }
+    if (topic === 'asesor') { setTimeout(startHandoff, 200); return; }
+    const item = topic ? qa.find((q) => q.key === topic) : null;
+    if (item) {
+      setTopics((t) => (t.includes(item.key) ? t : [...t, item.key]));
+      setTimeout(() => setMessages((m) => [...m, { from: 'bot', text: item.a }]), 250);
+    } else {
+      setTimeout(() => setMessages((m) => [...m, { from: 'bot', text: es
+        ? 'Buena pregunta 😊 Para darte ese detalle exacto, te paso con un asesor. Toca "Hablar con un asesor" 👇 o elige una opción del menú.'
+        : 'Good question 😊 For that exact detail, let me connect you with an advisor. Tap "Talk to an advisor" 👇 or pick a menu option.' }]), 250);
+    }
   };
 
   const startHandoff = () => {
@@ -1554,6 +1603,19 @@ const ChatAssistant = ({ lang, onLead, onOpenReel }: { lang: string, onLead: (lo
                     <i className="fab fa-whatsapp text-base"></i>
                     {es ? 'Hablar con un asesor' : 'Talk to an advisor'}
                   </button>
+                  <div className="flex items-center gap-2 mt-2.5">
+                    <input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleFreeText(); }}
+                      placeholder={es ? 'Escribe tu pregunta…' : 'Type your question…'}
+                      className="flex-grow bg-softGray border border-gray-200 rounded-full px-4 py-2.5 text-sm text-navy placeholder-gray-400 focus:outline-none focus:border-luxuryGold transition"
+                    />
+                    <button onClick={handleFreeText} aria-label={es ? 'Enviar' : 'Send'}
+                      className="w-10 h-10 shrink-0 rounded-full bg-navy hover:bg-luxuryGold text-white hover:text-navy flex items-center justify-center transition">
+                      <i className="fas fa-paper-plane text-sm"></i>
+                    </button>
+                  </div>
                 </>
               ) : (
                 <div className="space-y-2.5">
