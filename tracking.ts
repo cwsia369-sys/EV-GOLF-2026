@@ -153,11 +153,47 @@ export function trackEvent(eventName: string, params: Record<string, any> = {}):
 }
 
 // =============================================================
-//  Meta Pixel — disparo seguro de eventos
+//  Meta Pixel + Conversions API (CAPI) — disparo con deduplicación
 // =============================================================
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const m = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)"));
+  return m ? decodeURIComponent(m[1]) : undefined;
+}
+
+function newEventId(): string {
+  return "ev_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
+}
+
 export function metaTrack(event: string, params: Record<string, any> = {}): void {
-  if (typeof window !== "undefined" && typeof window.fbq === "function") {
-    window.fbq("track", event, params);
+  if (typeof window === "undefined") return;
+
+  // event_id compartido: el Pixel (navegador) y la CAPI (servidor) lo usan para
+  // que Meta cuente la conversión UNA sola vez (deduplicación).
+  const eventId = newEventId();
+
+  if (typeof window.fbq === "function") {
+    window.fbq("track", event, params, { eventID: eventId });
+  }
+
+  // Envío en paralelo a la CAPI (recupera eventos que el Pixel pierde).
+  // Si el endpoint no tiene token, responde no-op sin afectar nada.
+  try {
+    fetch("/api/capi", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        event_name: event,
+        event_id: eventId,
+        event_source_url: window.location.href,
+        fbp: getCookie("_fbp"),
+        fbc: getCookie("_fbc"),
+        custom_data: params,
+      }),
+    }).catch(() => {});
+  } catch {
+    /* noop */
   }
 }
 
