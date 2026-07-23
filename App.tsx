@@ -1413,6 +1413,197 @@ const Footer = ({ t }: { t: any }) => (
   </footer>
 );
 
+// =============================================================
+//  Botón flotante de WhatsApp + captura rápida (Nombre / Ciudad / Uso)
+//  Arma un mensaje CALIFICADO para que el asesor abra el chat con contexto.
+// =============================================================
+const FloatingWhatsApp = ({ lang, onLead }: { lang: string, onLead: (loc: string, extra?: Record<string, any>) => void }) => {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [city, setCity] = useState('');
+  const [use, setUse] = useState('');
+  const [model, setModel] = useState('');
+
+  const es = lang === 'es';
+  const uses = es
+    ? ['Hotel', 'Club', 'Finca', 'Resort', 'Conjunto residencial', 'Campo de golf', 'Proyecto turístico', 'Otro']
+    : ['Hotel', 'Club', 'Estate', 'Resort', 'Residential complex', 'Golf course', 'Tourism project', 'Other'];
+  const models = es
+    ? [{ v: '4 Puestos Luxury Edition', l: '4 Puestos' }, { v: '6 Puestos Family Resort', l: '6 Puestos' }, { v: 'Aún no sé / quiero asesoría', l: 'No estoy seguro' }]
+    : [{ v: '4-Seat Luxury Edition', l: '4-Seat' }, { v: '6-Seat Family Resort', l: '6-Seat' }, { v: "Not sure / need advice", l: "Not sure yet" }];
+
+  const send = () => {
+    const parts = es
+      ? [
+          `Hola EV-GOLF${name ? `, soy ${name.trim()}` : ''}${city ? ` de ${city.trim()}` : ''}.`,
+          model ? `Me interesa el ${model}.` : 'Me interesan los carros de golf eléctricos.',
+          use ? `Lo necesito para: ${use}.` : '',
+          'Quiero fotos, disponibilidad y precio con entrega inmediata.',
+        ]
+      : [
+          `Hi EV-GOLF${name ? `, I'm ${name.trim()}` : ''}${city ? ` from ${city.trim()}` : ''}.`,
+          model ? `I'm interested in the ${model}.` : "I'm interested in the electric golf carts.",
+          use ? `I need it for: ${use}.` : '',
+          'I want photos, availability and pricing with immediate delivery.',
+        ];
+    const message = parts.filter(Boolean).join(' ');
+    onLead('floating_quick_quote', { model: model || undefined, city: city || undefined, use: use || undefined });
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+    setOpen(false);
+  };
+
+  return (
+    <>
+      {/* Popover de captura */}
+      {open && (
+        <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center sm:justify-end p-0 sm:p-6">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="relative w-full sm:w-[380px] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+            {/* Header */}
+            <div className="bg-navy px-6 py-5 flex items-center gap-3">
+              <span className="w-11 h-11 rounded-full bg-[#25D366] flex items-center justify-center text-white text-xl shrink-0">
+                <i className="fab fa-whatsapp"></i>
+              </span>
+              <div className="flex-grow">
+                <p className="text-white font-black text-base leading-tight">{es ? 'Cotiza en 30 segundos' : 'Get a quote in 30s'}</p>
+                <p className="text-luxuryGold text-[11px] font-bold flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  {es ? 'Te respondemos en minutos' : 'We reply within minutes'}
+                </p>
+              </div>
+              <button onClick={() => setOpen(false)} aria-label="Cerrar" className="text-white/60 hover:text-white text-lg w-8 h-8 flex items-center justify-center">
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            {/* Form */}
+            <div className="p-5 space-y-3">
+              <input
+                value={name} onChange={(e) => setName(e.target.value)}
+                placeholder={es ? 'Tu nombre' : 'Your name'}
+                className="w-full bg-softGray border border-gray-200 rounded-xl px-4 py-3 text-sm text-navy placeholder-gray-400 focus:outline-none focus:border-luxuryGold focus:ring-1 focus:ring-luxuryGold transition"
+              />
+              <input
+                value={city} onChange={(e) => setCity(e.target.value)}
+                placeholder={es ? 'Ciudad' : 'City'}
+                className="w-full bg-softGray border border-gray-200 rounded-xl px-4 py-3 text-sm text-navy placeholder-gray-400 focus:outline-none focus:border-luxuryGold focus:ring-1 focus:ring-luxuryGold transition"
+              />
+              <select
+                value={use} onChange={(e) => setUse(e.target.value)}
+                className={`w-full bg-softGray border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-luxuryGold focus:ring-1 focus:ring-luxuryGold transition ${use ? 'text-navy' : 'text-gray-400'}`}
+              >
+                <option value="">{es ? '¿Para qué lo usarás?' : 'What will you use it for?'}</option>
+                {uses.map((u) => <option key={u} value={u} className="text-navy">{u}</option>)}
+              </select>
+              <select
+                value={model} onChange={(e) => setModel(e.target.value)}
+                className={`w-full bg-softGray border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-luxuryGold focus:ring-1 focus:ring-luxuryGold transition ${model ? 'text-navy' : 'text-gray-400'}`}
+              >
+                <option value="">{es ? 'Modelo de interés (opcional)' : 'Model of interest (optional)'}</option>
+                {models.map((m) => <option key={m.v} value={m.v} className="text-navy">{m.l}</option>)}
+              </select>
+              <button
+                onClick={send}
+                className="shine w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-green-500/20"
+              >
+                <i className="fab fa-whatsapp text-lg"></i>
+                {es ? 'Cotizar por WhatsApp' : 'Quote on WhatsApp'}
+              </button>
+              <p className="text-center text-[10px] text-gray-400 font-medium">
+                {es ? 'Sin compromiso · Asesoría directa' : 'No commitment · Direct advice'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Botón flotante */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          aria-label={lang === 'es' ? 'Cotizar por WhatsApp' : 'Quote on WhatsApp'}
+          className="fixed bottom-5 right-5 z-[80] flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white pl-4 pr-5 py-3.5 rounded-full shadow-2xl shadow-green-600/30 transition-all duration-300 hover:scale-105 group"
+        >
+          <span className="relative flex items-center justify-center">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60 animate-ping" />
+            <i className="fab fa-whatsapp text-2xl relative"></i>
+          </span>
+          <span className="font-black text-sm hidden sm:inline">{lang === 'es' ? 'Cotizar ahora' : 'Get a quote'}</span>
+        </button>
+      )}
+    </>
+  );
+};
+
+// =============================================================
+//  FAQ (manejo de objeciones) — acordeón
+// =============================================================
+const FAQ = ({ lang }: { lang: string }) => {
+  const [open, setOpen] = useState<number | null>(0);
+  const es = lang === 'es';
+  const items = es ? [
+    { q: '¿Cuánto tarda la entrega?', a: 'Tenemos unidades nuevas con entrega inmediata en Colombia. Confirmamos disponibilidad del modelo y coordinamos el despacho hasta tu ciudad apenas se concreta la compra.' },
+    { q: '¿Los carros son nuevos?', a: 'Sí. Todas las unidades son nuevas, con batería de litio, y salen listas para usar con su garantía de fábrica.' },
+    { q: '¿Qué garantía tienen?', a: '1 año de garantía de fábrica en todas las piezas. Te acompañamos ante cualquier novedad durante ese periodo.' },
+    { q: '¿Cuánto dura la batería y cuánto rinde?', a: 'Batería de litio 72V–100AH con autonomía aproximada de 80–90 km por carga y velocidad de hasta 35 km/h. Se recarga en un tomacorriente convencional.' },
+    { q: '¿Ofrecen financiación?', a: 'La compra es de contado. Aceptamos transferencia bancaria, PSE, efectivo y tarjeta. Coordinamos el medio de pago que más te convenga.' },
+    { q: '¿Entregan factura?', a: 'Sí, emitimos factura por la compra. Coordinamos los datos de facturación al concretar la venta.' },
+    { q: '¿Hacen envíos a todo el país?', a: 'Sí, despachamos a nivel nacional. Coordinamos la logística hasta tu ciudad o proyecto.' },
+    { q: '¿Puedo personalizar el carro?', a: 'Sí. En el configurador eliges modelo, color exterior, tono del cuero y accesorios. También puedes consultarnos por requerimientos especiales.' },
+    { q: '¿Necesito licencia o matrícula?', a: 'Son vehículos pensados para movilidad dentro de espacios privados (hoteles, clubes, fincas, conjuntos, resorts), no para circular en vías públicas.' },
+    { q: '¿Puedo ver un video o más fotos antes de comprar?', a: '¡Claro! Escríbenos por WhatsApp y te enviamos videos, fotos reales y la ficha técnica completa del modelo que te interese.' },
+  ] : [
+    { q: 'How long does delivery take?', a: 'We have brand-new units with immediate delivery in Colombia. We confirm model availability and coordinate shipping to your city as soon as the purchase is set.' },
+    { q: 'Are the carts new?', a: 'Yes. All units are brand-new, with lithium batteries, ready to use and covered by factory warranty.' },
+    { q: 'What warranty do they include?', a: '1-year factory warranty on all parts. We support you with any issue during that period.' },
+    { q: 'How long does the battery last and what range?', a: 'Lithium battery 72V–100AH with an approximate range of 80–90 km per charge and speeds up to 35 km/h. It recharges from a standard outlet.' },
+    { q: 'Do you offer financing?', a: 'Purchase is paid in full. We accept bank transfer, PSE, cash and card. We coordinate the payment method that suits you best.' },
+    { q: 'Do you issue an invoice?', a: 'Yes, we issue an invoice for the purchase. We coordinate billing details when closing the sale.' },
+    { q: 'Do you ship nationwide?', a: 'Yes, we ship across the country. We coordinate logistics to your city or project.' },
+    { q: 'Can I customize the cart?', a: 'Yes. In the configurator you choose model, exterior color, leather tone and accessories. You can also ask us about special requirements.' },
+    { q: 'Do I need a license or registration?', a: 'These vehicles are designed for mobility within private spaces (hotels, clubs, estates, complexes, resorts), not for public roads.' },
+    { q: 'Can I see a video or more photos before buying?', a: 'Of course! Message us on WhatsApp and we\'ll send videos, real photos and the full technical sheet of the model you like.' },
+  ];
+
+  return (
+    <section className="py-24 bg-softGray border-t border-gray-100">
+      <div className="container mx-auto px-6">
+        <div className="reveal text-center max-w-3xl mx-auto mb-14">
+          <span className="text-luxuryGold font-extrabold tracking-[0.4em] uppercase text-[11px] mb-4 block">
+            {es ? 'Preguntas frecuentes' : 'FAQ'}
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black text-navy mb-5 tracking-tight leading-none uppercase">
+            {es ? 'Resolvemos tus dudas' : 'We answer your questions'}
+          </h2>
+          <p className="text-gray-500 font-light leading-relaxed text-base md:text-lg">
+            {es ? 'Todo lo que necesitas saber antes de comprar tu carro de golf eléctrico.' : 'Everything you need to know before buying your electric golf cart.'}
+          </p>
+        </div>
+
+        <div className="reveal max-w-3xl mx-auto space-y-3">
+          {items.map((it, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 luxury-shadow overflow-hidden">
+              <button
+                onClick={() => setOpen(open === i ? null : i)}
+                className="w-full flex items-center justify-between gap-4 text-left px-6 py-5 group"
+              >
+                <span className="text-navy font-bold text-sm md:text-base leading-snug">{it.q}</span>
+                <span className={`shrink-0 w-8 h-8 rounded-full bg-navy/5 flex items-center justify-center text-luxuryGold transition-transform duration-300 ${open === i ? 'rotate-180 bg-luxuryGold/15' : ''}`}>
+                  <i className="fas fa-chevron-down text-xs"></i>
+                </span>
+              </button>
+              <div className={`grid transition-all duration-300 ease-in-out ${open === i ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                <div className="overflow-hidden">
+                  <p className="px-6 pb-5 text-gray-500 text-sm font-light leading-relaxed">{it.a}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const App: React.FC = () => {
   // --- TRACKING INIT (UTMs + GTM + page_view + scroll depth) ---
   useEffect(() => {
@@ -1619,7 +1810,70 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        <Configurator 
+        {/* Comparación 4 vs 6 */}
+        <section className="py-24 bg-softGray border-t border-gray-100">
+          <div className="container mx-auto px-6">
+            <div className="reveal text-center max-w-3xl mx-auto mb-14">
+              <span className="text-luxuryGold font-extrabold tracking-[0.4em] uppercase text-[11px] mb-4 block">
+                {lang === 'es' ? 'Compara y elige' : 'Compare & choose'}
+              </span>
+              <h2 className="text-3xl md:text-5xl font-black text-navy mb-5 tracking-tight leading-none uppercase">
+                {lang === 'es' ? '¿4 o 6 puestos?' : '4 or 6 seats?'}
+              </h2>
+              <p className="text-gray-500 font-light leading-relaxed text-base md:text-lg">
+                {lang === 'es'
+                  ? 'Misma ingeniería premium. Elige según cuántas personas necesitas mover.'
+                  : 'Same premium engineering. Choose by how many people you need to move.'}
+              </p>
+            </div>
+
+            <div className="reveal max-w-4xl mx-auto overflow-x-auto">
+              <table className="w-full bg-white rounded-3xl overflow-hidden luxury-shadow border border-gray-100 text-sm">
+                <thead>
+                  <tr className="bg-navy text-white">
+                    <th className="text-left px-5 py-5 font-bold text-xs uppercase tracking-wider">{lang === 'es' ? 'Característica' : 'Feature'}</th>
+                    <th className="px-4 py-5 font-black text-center">{lang === 'es' ? '4 Puestos' : '4-Seat'}<br /><span className="text-luxuryGold text-[10px] font-bold uppercase tracking-wider">Luxury Edition</span></th>
+                    <th className="px-4 py-5 font-black text-center">{lang === 'es' ? '6 Puestos' : '6-Seat'}<br /><span className="text-luxuryGold text-[10px] font-bold uppercase tracking-wider">Family Resort</span></th>
+                  </tr>
+                </thead>
+                <tbody className="text-navy">
+                  {[
+                    { f: lang === 'es' ? 'Capacidad' : 'Capacity', a: lang === 'es' ? '4 personas' : '4 people', b: lang === 'es' ? '6 personas' : '6 people' },
+                    { f: lang === 'es' ? 'Ideal para' : 'Ideal for', a: lang === 'es' ? 'Fincas, conjuntos, clubes' : 'Estates, condos, clubs', b: lang === 'es' ? 'Hoteles, resorts, grupos' : 'Hotels, resorts, groups' },
+                    { f: lang === 'es' ? 'Motor' : 'Motor', a: '3.5 KW', b: '3.5 KW' },
+                    { f: lang === 'es' ? 'Batería' : 'Battery', a: lang === 'es' ? 'Litio 72V–100AH' : 'Lithium 72V–100AH', b: lang === 'es' ? 'Litio premium 72V–100AH' : 'Premium Lithium 72V–100AH' },
+                    { f: lang === 'es' ? 'Autonomía' : 'Range', a: '80–90 km', b: '80–90 km' },
+                    { f: lang === 'es' ? 'Velocidad' : 'Speed', a: '35 km/h', b: '35 km/h' },
+                    { f: lang === 'es' ? 'Pantalla + cámara' : 'Screen + camera', a: '✓', b: '✓' },
+                    { f: lang === 'es' ? 'Garantía' : 'Warranty', a: lang === 'es' ? '1 año' : '1 year', b: lang === 'es' ? '1 año' : '1 year' },
+                    { f: lang === 'es' ? 'Precio de lanzamiento' : 'Launch price', a: '$55.900.000', b: '$59.900.000' },
+                  ].map((r, i) => (
+                    <tr key={i} className={i % 2 ? 'bg-softGray/40' : 'bg-white'}>
+                      <td className="px-5 py-3.5 font-semibold text-gray-600 text-xs md:text-sm">{r.f}</td>
+                      <td className="px-4 py-3.5 text-center font-bold">{r.a}</td>
+                      <td className="px-4 py-3.5 text-center font-bold">{r.b}</td>
+                    </tr>
+                  ))}
+                  <tr className="bg-white border-t border-gray-100">
+                    <td className="px-5 py-4"></td>
+                    <td className="px-4 py-4 text-center">
+                      <button onClick={() => handlePersonalizeSelected('4-seat')} className="bg-navy hover:bg-luxuryGold hover:text-navy text-white text-xs font-black px-4 py-2.5 rounded-full transition-all duration-300">
+                        {lang === 'es' ? 'Elegir 4 Puestos' : 'Choose 4-Seat'}
+                      </button>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <button onClick={() => handlePersonalizeSelected('6-seat')} className="bg-navy hover:bg-luxuryGold hover:text-navy text-white text-xs font-black px-4 py-2.5 rounded-full transition-all duration-300">
+                        {lang === 'es' ? 'Elegir 6 Puestos' : 'Choose 6-Seat'}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <Configurator
           t={t}
           lang={lang}
           selectedModel={selectedModel}
@@ -1675,6 +1929,95 @@ const App: React.FC = () => {
           </div>
         </section>
 
+        {/* Cómo comprar — 3 pasos */}
+        <section className="py-24 bg-white border-t border-gray-100">
+          <div className="container mx-auto px-6">
+            <div className="reveal text-center max-w-3xl mx-auto mb-16">
+              <span className="text-luxuryGold font-extrabold tracking-[0.4em] uppercase text-[11px] mb-4 block">
+                {lang === 'es' ? 'Fácil y seguro' : 'Easy & secure'}
+              </span>
+              <h2 className="text-3xl md:text-5xl font-black text-navy mb-5 tracking-tight leading-none uppercase">
+                {lang === 'es' ? 'Cómo comprar tu EV-GOLF' : 'How to buy your EV-GOLF'}
+              </h2>
+              <p className="text-gray-500 font-light leading-relaxed text-base md:text-lg">
+                {lang === 'es' ? 'Tres pasos simples, sin trámites complicados.' : 'Three simple steps, no complicated paperwork.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {[
+                { n: '1', icon: 'fa-comments', es_t: 'Cotiza por WhatsApp', en_t: 'Get a quote on WhatsApp', es_d: 'Escríbenos y te enviamos fotos reales, video y ficha técnica. Resolvemos todas tus dudas al instante.', en_d: 'Message us and we send real photos, video and the tech sheet. We answer all your questions instantly.' },
+                { n: '2', icon: 'fa-file-invoice-dollar', es_t: 'Confirmamos y facturamos', en_t: 'We confirm & invoice', es_d: 'Verificamos disponibilidad para entrega inmediata, acordamos el medio de pago y emitimos tu factura.', en_d: 'We verify availability for immediate delivery, agree on the payment method and issue your invoice.' },
+                { n: '3', icon: 'fa-truck-ramp-box', es_t: 'Recíbelo en tu ciudad', en_t: 'Receive it in your city', es_d: 'Coordinamos el despacho a nivel nacional hasta tu hotel, club, finca o proyecto. Listo para usar.', en_d: 'We coordinate nationwide shipping to your hotel, club, estate or project. Ready to use.' },
+              ].map((s, i) => (
+                <div key={s.n} className="reveal relative" style={{ transitionDelay: `${i * 90}ms` }}>
+                  <div className="group h-full bg-softGray rounded-3xl p-8 border border-gray-100 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-luxuryGold/40">
+                    <div className="flex items-center gap-4 mb-5">
+                      <span className="w-12 h-12 rounded-2xl bg-navy text-luxuryGold font-black text-lg flex items-center justify-center shrink-0 transition-all duration-300 group-hover:bg-luxuryGold group-hover:text-navy">{s.n}</span>
+                      <span className="text-luxuryGold text-2xl"><i className={`fas ${s.icon}`}></i></span>
+                    </div>
+                    <h3 className="text-navy font-black text-lg mb-2 tracking-tight">{lang === 'es' ? s.es_t : s.en_t}</h3>
+                    <p className="text-gray-500 text-sm font-light leading-relaxed">{lang === 'es' ? s.es_d : s.en_d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Confianza / prueba social */}
+        <section className="py-24 bg-navy relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-luxuryGold/5 rounded-full blur-[120px] pointer-events-none" />
+          <div className="container mx-auto px-6 relative">
+            <div className="reveal text-center max-w-3xl mx-auto mb-14">
+              <span className="text-luxuryGold font-extrabold tracking-[0.4em] uppercase text-[11px] mb-4 block">
+                {lang === 'es' ? 'Compra con confianza' : 'Buy with confidence'}
+              </span>
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-5 tracking-tight leading-none uppercase">
+                {lang === 'es' ? 'Por qué comprarnos a nosotros' : 'Why buy from us'}
+              </h2>
+              <p className="text-gray-300 font-light leading-relaxed text-base md:text-lg">
+                {lang === 'es'
+                  ? 'Respaldo real para una compra de alto valor: unidades nuevas, garantía, factura y entrega en todo el país.'
+                  : 'Real backing for a high-value purchase: new units, warranty, invoice and nationwide delivery.'}
+              </p>
+            </div>
+
+            {/* Sellos de confianza */}
+            <div className="reveal grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-auto mb-14">
+              {[
+                { icon: 'fa-certificate', es: 'Carros nuevos', en: 'Brand-new carts' },
+                { icon: 'fa-shield-halved', es: 'Garantía 1 año', en: '1-year warranty' },
+                { icon: 'fa-file-invoice', es: 'Factura de compra', en: 'Purchase invoice' },
+                { icon: 'fa-truck-fast', es: 'Entrega nacional', en: 'Nationwide delivery' },
+                { icon: 'fa-bolt', es: 'Entrega inmediata', en: 'Immediate delivery' },
+              ].map((b, i) => (
+                <div key={b.es} className="reveal flex flex-col items-center text-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-6 transition-all duration-300 hover:bg-white/10 hover:border-luxuryGold/40" style={{ transitionDelay: `${i * 60}ms` }}>
+                  <span className="w-12 h-12 rounded-full bg-luxuryGold/15 text-luxuryGold text-xl flex items-center justify-center">
+                    <i className={`fas ${b.icon}`}></i>
+                  </span>
+                  <span className="text-white text-xs font-bold uppercase tracking-wider leading-tight">{lang === 'es' ? b.es : b.en}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Clientes ideales */}
+            <div className="reveal text-center">
+              <p className="text-gray-400 text-[11px] font-bold uppercase tracking-[0.3em] mb-6">
+                {lang === 'es' ? 'Confían en la movilidad EV-GOLF' : 'They trust EV-GOLF mobility'}
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
+                {(lang === 'es'
+                  ? ['Hoteles', 'Resorts', 'Clubes campestres', 'Conjuntos residenciales', 'Fincas', 'Campos de golf', 'Glamping', 'Proyectos turísticos']
+                  : ['Hotels', 'Resorts', 'Country clubs', 'Residential complexes', 'Estates', 'Golf courses', 'Glamping', 'Tourism projects']
+                ).map((c) => (
+                  <span key={c} className="text-gray-200 text-sm font-semibold px-5 py-2.5 rounded-full border border-white/15 bg-white/5">{c}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-24 bg-white">
             <div className="reveal container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-16 text-center items-start">
                 <div className="group px-8">
@@ -1710,6 +2053,8 @@ const App: React.FC = () => {
                 </div>
             </div>
         </section>
+
+        <FAQ lang={lang} />
       </main>
 
       <Footer t={t} />
@@ -1725,7 +2070,10 @@ const App: React.FC = () => {
 
       {/* Video Modal (hero reel + videos de modelos) */}
       <VideoModal video={activeVideo} onClose={() => { setActiveVideo(null); if (window.location.pathname.startsWith('/video')) history.replaceState(null, '', '/'); }} t={t} />
-      
+
+      {/* Botón flotante de WhatsApp con captura rápida */}
+      <FloatingWhatsApp lang={lang} onLead={leadEvent} />
+
     </div>
   );
 };
